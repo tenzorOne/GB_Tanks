@@ -19,6 +19,11 @@ public:
 	// Sets default values for this pawn's properties
 	ATankPawn();
 
+	UFUNCTION()
+		void MoveForward(float AxisValue);
+	UFUNCTION()
+		void MoveRight(float AxisValue);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -35,6 +40,9 @@ protected:
 		float MoveSpeed = 100.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float RotationSpeed = 100.f;
+
+	float TargetForwardAxisValue;
+	float TargetRightAxisValue;
 
 public:	
 	// Called every frame
