@@ -2,6 +2,8 @@
 
 
 #include "TankPawn.h"
+#include "Math/Vector.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -27,14 +29,12 @@ ATankPawn::ATankPawn()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
-
 }
 
 // Called when the game starts or when spawned
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -47,14 +47,12 @@ void ATankPawn::Tick(float DeltaTime)
 	FVector RightVector = GetActorRightVector();
 	FVector MovePosition = CurrentLocation + ((ForwardVector * TargetForwardAxisValue) + (RightVector * TargetRightAxisValue)) * MoveSpeed * DeltaTime ;
 	SetActorLocation(MovePosition, true);
-
 }
 
 // Called to bind functionality to input
 void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
 void ATankPawn::MoveForward(float AxisValue)
