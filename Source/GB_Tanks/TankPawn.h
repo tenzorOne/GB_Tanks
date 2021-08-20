@@ -22,7 +22,7 @@ public:
 	UFUNCTION()
 		void MoveForward(float AxisValue);
 	UFUNCTION()
-		void MoveRight(float AxisValue);
+		void RotateRight(float AxisValue);
 
 protected:
 	// Called when the game starts or when spawned
@@ -40,9 +40,14 @@ protected:
 		float MoveSpeed = 100.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float RotationSpeed = 100.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
+		float RotationSmoothness = 8.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Movement|Speed")
+		bool bUseConstantRotationSmoothness = true;
 
-	float TargetForwardAxisValue;
-	float TargetRightAxisValue;
+	float TargetForwardAxisValue = 0.f;
+	float TargetRightAxisValue = 0.f;
+	float CurrentRightAxisValue = 0.f;
 
 public:	
 	// Called every frame
@@ -50,4 +55,5 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 };

@@ -29,12 +29,14 @@ ATankPawn::ATankPawn()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
 }
 
 // Called when the game starts or when spawned
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
 }
 
 // Called every frame
@@ -44,23 +46,40 @@ void ATankPawn::Tick(float DeltaTime)
 
 	FVector CurrentLocation = GetActorLocation();
 	FVector ForwardVector = GetActorForwardVector();
-	FVector RightVector = GetActorRightVector();
-	FVector MovePosition = CurrentLocation + ((ForwardVector * TargetForwardAxisValue) + (RightVector * TargetRightAxisValue)) * MoveSpeed * DeltaTime ;
+	FVector MovePosition = CurrentLocation + (ForwardVector * TargetForwardAxisValue) * MoveSpeed * DeltaTime;
 	SetActorLocation(MovePosition, true);
+
+	if(bUseConstantRotationSmoothness)
+		CurrentRightAxisValue = FMath::FInterpConstantTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
+	else
+		CurrentRightAxisValue = FMath::FInterpTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
+	float YawRotation = RotationSpeed * CurrentRightAxisValue * DeltaTime;
+    YawRotation += GetActorRotation().Yaw;
+	SetActorRotation({ 0.f, YawRotation, 0.f });
+
+	UE_LOG(LogTemp, Warning, TEXT("TargetForwardAxisValue = %f"), TargetForwardAxisValue);
+
 }
 
 // Called to bind functionality to input
 void ATankPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
 }
 
 void ATankPawn::MoveForward(float AxisValue)
 {
 	TargetForwardAxisValue = AxisValue;
+
 }
 
-void ATankPawn::MoveRight(float AxisValue)
+void ATankPawn::RotateRight(float AxisValue)
 {
+	if (TargetForwardAxisValue != 0)
+	{
+		AxisValue = TargetForwardAxisValue == 1 ? AxisValue : AxisValue * -1;
+	}
 	TargetRightAxisValue = AxisValue;
+
 }
