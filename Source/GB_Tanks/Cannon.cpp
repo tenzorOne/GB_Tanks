@@ -33,8 +33,18 @@ void ACannon::Fire()
 	if (CannonType == ECannonType::FireProjectile)
 		GEngine->AddOnScreenDebugMessage(10, 1, FColor::Red, "Fire: Projectile");
 	else
-		GEngine->AddOnScreenDebugMessage(10, 1, FColor::Green, "Fire: Hit-Scan");
+		GEngine->AddOnScreenDebugMessage(10, 1, FColor::Yellow, "Fire: Hit-Scan");
 
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
+}
+
+void ACannon::FireSpecial()
+{
+	if (!ReadyToFire)
+		return;
+	ReadyToFire = false;
+
+	GEngine->AddOnScreenDebugMessage(10, 1, FColor::Emerald, "SPECIAL FIRE");
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
 }
 

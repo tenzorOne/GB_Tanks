@@ -28,6 +28,8 @@ public:
 		void RotateRight(float AxisValue);
 	UFUNCTION()
 		void Fire();
+	UFUNCTION()
+		void FireSpecial();
 
 protected:
 	// Called when the game starts or when spawned
