@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Cannon.h"
 #include "GameFramework/Pawn.h"
 #include "TankPawn.generated.h"
 
@@ -10,6 +11,7 @@ class UStaticMeshCompinent;
 class UCameraComponent;
 class USpringArmComponent;
 class ATankPlayerController;
+class ACannon;
 
 UCLASS()
 class GB_TANKS_API ATankPawn : public APawn
@@ -24,6 +26,8 @@ public:
 		void MoveForward(float AxisValue);
 	UFUNCTION()
 		void RotateRight(float AxisValue);
+	UFUNCTION()
+		void Fire();
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,6 +40,10 @@ protected:
 		USpringArmComponent* SpringArm;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UCameraComponent* Camera;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		UArrowComponent* CannonSetupPoint;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon")
+		TSubclassOf<ACannon> CannonClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float MoveSpeed = 100.f;
@@ -56,6 +64,8 @@ protected:
 
 	UPROPERTY()
 		ATankPlayerController* TankController;
+	UPROPERTY()
+		ACannon* Cannon;
 
 public:	
 	// Called every frame
@@ -63,5 +73,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+protected:
+	void SetupCannon();
 
 };
