@@ -25,6 +25,8 @@ protected:
 		UStaticMeshComponent* CannonMesh;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UArrowComponent* ProjectileSpawnPoint;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters", meta = (ClampMin = "0"))
+		int Ammo = 4;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
 		float FireRate = 1.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
@@ -36,6 +38,7 @@ protected:
 
 	FTimerHandle ReloadTimerHandle;
 	bool ReadyToFire = true;
+	int MaxAmmo;
 
 public:	
 	// Called every frame

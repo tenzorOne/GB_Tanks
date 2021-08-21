@@ -26,25 +26,47 @@ ACannon::ACannon()
 
 void ACannon::Fire()
 {
+	if (Ammo == 0)
+	{
+		GEngine->AddOnScreenDebugMessage(10, 5, FColor::Orange, "NOT ENOUGH AMMO!");
+		return;
+	}
+	
 	if (!ReadyToFire)
 		return;
 	ReadyToFire = false;
 
 	if (CannonType == ECannonType::FireProjectile)
-		GEngine->AddOnScreenDebugMessage(10, 1, FColor::Red, "Fire: Projectile");
+	{
+		Ammo--;
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString("Ammo: ") + FString::FromInt(Ammo) + FString("/") + FString::FromInt(MaxAmmo));
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, "Fire: Projectile");
+	}
 	else
-		GEngine->AddOnScreenDebugMessage(10, 1, FColor::Yellow, "Fire: Hit-Scan");
+	{
+		Ammo--;
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, FString("Ammo: ") + FString::FromInt(Ammo) + FString("/") + FString::FromInt(MaxAmmo));
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, "Fire: Hit-Scan");
+	}
 
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
 }
 
 void ACannon::FireSpecial()
 {
+	if (Ammo == 0)
+	{
+		GEngine->AddOnScreenDebugMessage(10, 5, FColor::Orange, "NOT ENOUGH AMMO!");
+		return;
+	}
+	
 	if (!ReadyToFire)
 		return;
 	ReadyToFire = false;
 
-	GEngine->AddOnScreenDebugMessage(10, 1, FColor::Emerald, "SPECIAL FIRE");
+	Ammo--;
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, FString("Ammo: ") + FString::FromInt(Ammo) + FString("/") + FString::FromInt(MaxAmmo));
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, "SPECIAL FIRE");
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
 }
 
@@ -63,6 +85,8 @@ void ACannon::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	MaxAmmo = Ammo;
+
 }
 
 // Called every frame
