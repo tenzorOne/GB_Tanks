@@ -2,10 +2,14 @@
 
 
 #include "TankPlayerController.h"
+#include "DrawDebugHelpers.h"
 #include "TankPawn.h"
 
 ATankPlayerController::ATankPlayerController()
-{}
+{
+	bShowMouseCursor = true;
+
+}
 
 void ATankPlayerController::SetupInputComponent()
 {
@@ -20,6 +24,21 @@ void ATankPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	TankPawn = Cast<ATankPawn>(GetPawn());
+
+}
+
+void ATankPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	FVector MouseDirection;
+	DeprojectMousePositionToWorld(MousePos, MouseDirection);
+	FVector PawnPos = TankPawn->GetActorLocation();
+	MousePos.Z = PawnPos.Z;
+	FVector MouseDir = MousePos - PawnPos;
+	MouseDir.Normalize();
+	MousePos = PawnPos + MouseDir * 1000.f;
+	DrawDebugLine(GetWorld(), PawnPos, MousePos, FColor::Blue, false, 0.f, 0.f, 5.f);
 
 }
 

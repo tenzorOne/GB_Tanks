@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "TankPlayerController.h"
 
 // Sets default values
 ATankPawn::ATankPawn()
@@ -36,6 +37,8 @@ ATankPawn::ATankPawn()
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	TankController = Cast<ATankPlayerController>(GetController());
 
 }
 
@@ -49,7 +52,7 @@ void ATankPawn::Tick(float DeltaTime)
 	FVector MovePosition = CurrentLocation + (ForwardVector * TargetForwardAxisValue) * MoveSpeed * DeltaTime;
 	SetActorLocation(MovePosition, true);
 
-	if(bUseConstantRotationSmoothness)
+	if(bUseBaseConstantRotationSmoothness)
 		CurrentRightAxisValue = FMath::FInterpConstantTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
 	else
 		CurrentRightAxisValue = FMath::FInterpTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
@@ -57,7 +60,19 @@ void ATankPawn::Tick(float DeltaTime)
     YawRotation += GetActorRotation().Yaw;
 	SetActorRotation({ 0.f, YawRotation, 0.f });
 
-	UE_LOG(LogTemp, Warning, TEXT("TargetForwardAxisValue = %f"), TargetForwardAxisValue);
+	if (TankController)
+	{
+		FVector MousePos = TankController->GetMousePos();
+		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MousePos);
+		FRotator CurrRotation = TurretMesh->GetComponentRotation();
+		TargetRotation.Pitch = CurrRotation.Pitch;
+		TargetRotation.Roll = CurrRotation.Roll;
+		if (bUseTurretConstantRotationSmoothness)
+			TargetRotation = FMath::RInterpConstantTo(CurrRotation, TargetRotation, DeltaTime, TurretRotationSmoothness);
+		else
+			TargetRotation = FMath::RInterpTo(CurrRotation, TargetRotation, DeltaTime, TurretRotationSmoothness);
+		TurretMesh->SetWorldRotation(TargetRotation);
+	}
 
 }
 
@@ -77,9 +92,7 @@ void ATankPawn::MoveForward(float AxisValue)
 void ATankPawn::RotateRight(float AxisValue)
 {
 	if (TargetForwardAxisValue != 0)
-	{
 		AxisValue = TargetForwardAxisValue == 1 ? AxisValue : AxisValue * -1;
-	}
 	TargetRightAxisValue = AxisValue;
 
 }

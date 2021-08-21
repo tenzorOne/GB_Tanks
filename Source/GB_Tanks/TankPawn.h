@@ -9,6 +9,7 @@
 class UStaticMeshCompinent;
 class UCameraComponent;
 class USpringArmComponent;
+class ATankPlayerController;
 
 UCLASS()
 class GB_TANKS_API ATankPawn : public APawn
@@ -42,12 +43,19 @@ protected:
 		float RotationSpeed = 100.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float RotationSmoothness = 8.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
+		float TurretRotationSmoothness = 8.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Movement|Speed")
-		bool bUseConstantRotationSmoothness = true;
+		bool bUseBaseConstantRotationSmoothness = true;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Turret|Rotation")
+		bool bUseTurretConstantRotationSmoothness = true;
 
 	float TargetForwardAxisValue = 0.f;
 	float TargetRightAxisValue = 0.f;
 	float CurrentRightAxisValue = 0.f;
+
+	UPROPERTY()
+		ATankPlayerController* TankController;
 
 public:	
 	// Called every frame
