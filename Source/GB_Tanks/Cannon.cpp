@@ -24,6 +24,7 @@ ACannon::ACannon()
 
 }
 
+// Cannon fire functional
 void ACannon::Fire()
 {
 	if (Ammo == 0)
@@ -42,16 +43,38 @@ void ACannon::Fire()
 		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString("Ammo: ") + FString::FromInt(Ammo) + FString("/") + FString::FromInt(MaxAmmo));
 		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, "Fire: Projectile");
 	}
-	else
+	else if (CannonType == ECannonType::FireTrace)
 	{
 		Ammo--;
 		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, FString("Ammo: ") + FString::FromInt(Ammo) + FString("/") + FString::FromInt(MaxAmmo));
 		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, "Fire: Hit-Scan");
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
+
 }
 
+// Automatic cannon fire functional
+void ACannon::AutomaticFire()
+{
+	if (ReadyToFire)
+	{
+		if (Ammo != 0)
+		{
+			Ammo--;
+			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::White, FString("Ammo: ") + FString::FromInt(Ammo) + FString("/") + FString::FromInt(MaxAmmo));
+			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::White, "Fire: Automatic Projectile");
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::AutomaticFire, 1.f / FireRate, false);
+		}
+		else
+			GEngine->AddOnScreenDebugMessage(10, 5, FColor::Orange, "NOT ENOUGH AMMO!");
+	}
+	else
+		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
+
+}
+
+// Special cannon fire functional (on RMB)
 void ACannon::FireSpecial()
 {
 	if (Ammo == 0)
@@ -68,16 +91,25 @@ void ACannon::FireSpecial()
 	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, FString("Ammo: ") + FString::FromInt(Ammo) + FString("/") + FString::FromInt(MaxAmmo));
 	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, "SPECIAL FIRE");
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
+
 }
 
 void ACannon::Reload()
 {
 	ReadyToFire = true;
+
+}
+
+void ACannon::StopAutomaticFire()
+{
+	ReadyToFire = false;
+
 }
 
 bool ACannon::IsReadyToFire()
 {
 	return ReadyToFire;
+
 }
 
 // Called when the game starts or when spawned

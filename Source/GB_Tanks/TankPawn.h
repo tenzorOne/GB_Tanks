@@ -29,7 +29,11 @@ public:
 	UFUNCTION()
 		void Fire();
 	UFUNCTION()
+		void StopAutomaticFire();
+	UFUNCTION()
 		void FireSpecial();
+	UFUNCTION()
+		float GetDefaultStopFactor() { TempStopFactor = StopInertiaFactor; return TempStopFactor; };
 
 protected:
 	// Called when the game starts or when spawned
@@ -49,6 +53,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float MoveSpeed = 100.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed", meta = (ClampMin = "0", ClampMax = "1"))
+		float MovementMomentum = 0.25f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed", meta = (ClampMin = "0", ClampMax = "2"))
+		float StopInertiaFactor = 0.5f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed", meta = (ClampMin = "0", ClampMax = "10"))
+		float StopFactorInterpSpeed = 5.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float RotationSpeed = 100.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
@@ -60,9 +70,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Turret|Rotation")
 		bool bUseTurretConstantRotationSmoothness = true;
 
+	float MovementInterp = 0.f;
+	float MovementSmoothnes = 0.f;
+	float TempStopFactor;
 	float TargetForwardAxisValue = 0.f;
 	float TargetRightAxisValue = 0.f;
 	float CurrentRightAxisValue = 0.f;
+	float LastForwardAxisValue = 0.f;
 
 	UPROPERTY()
 		ATankPlayerController* TankController;

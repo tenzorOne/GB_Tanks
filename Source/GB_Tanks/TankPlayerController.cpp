@@ -17,6 +17,7 @@ void ATankPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("MoveForward", this, &ATankPlayerController::MoveForward);
 	InputComponent->BindAxis("RotateRight", this, &ATankPlayerController::RotateRight);
 	InputComponent->BindAction("Fire", IE_Pressed, this, &ATankPlayerController::Fire);
+	InputComponent->BindAction("Fire", IE_Released, this, &ATankPlayerController::StopAutomaticFire);
 	InputComponent->BindAction("AlternativeFire", IE_Pressed, this, &ATankPlayerController::FireSpecial);
 
 }
@@ -29,6 +30,7 @@ void ATankPlayerController::BeginPlay()
 
 }
 
+// Mouse position to world
 void ATankPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -47,11 +49,19 @@ void ATankPlayerController::Tick(float DeltaTime)
 void ATankPlayerController::Fire()
 {
 	TankPawn->Fire();
+
+}
+
+void ATankPlayerController::StopAutomaticFire()
+{
+	TankPawn->StopAutomaticFire();
+
 }
 
 void ATankPlayerController::FireSpecial()
 {
 	TankPawn->FireSpecial();
+
 }
 
 void ATankPlayerController::MoveForward(float AxisValue)

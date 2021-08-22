@@ -42,11 +42,13 @@ void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	TempStopFactor = GetDefaultStopFactor();
 	TankController = Cast<ATankPlayerController>(GetController());
 	SetupCannon();
 
 }
 
+// Spawn and setup cannon on tank
 void ATankPawn::SetupCannon()
 {
 	if (Cannon)
@@ -57,18 +59,35 @@ void ATankPawn::SetupCannon()
 	SpawnParameters.Owner = this;
 	Cannon = GetWorld()->SpawnActor<ACannon>(CannonClass, SpawnParameters);
 	Cannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
 }
 
+// Call the correct method based on the current Cannon type
 void ATankPawn::Fire()
 {
 	if (Cannon)
-		Cannon->Fire();
+	{
+		if (Cannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
+			Cannon->AutomaticFire();
+		else
+			Cannon->Fire();
+	}
+
+}
+
+// Stop automatic fire based on Fire Action-input (IE_Released)
+void ATankPawn::StopAutomaticFire()
+{
+	if(Cannon && Cannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
+		Cannon->StopAutomaticFire();
+
 }
 
 void ATankPawn::FireSpecial()
 {
 	if (Cannon)
 		Cannon->FireSpecial();
+
 }
 
 // Called every frame
@@ -76,11 +95,35 @@ void ATankPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector CurrentLocation = GetActorLocation();
-	FVector ForwardVector = GetActorForwardVector();
-	FVector MovePosition = CurrentLocation + (ForwardVector * TargetForwardAxisValue) * MoveSpeed * DeltaTime;
-	SetActorLocation(MovePosition, true);
+//  BACKUP Movement code from the training manual
+// 	FVector CurrentLocation = GetActorLocation();
+// 	FVector ForwardVector = GetActorForwardVector();
+// 	FVector MovePosition = CurrentLocation + (ForwardVector * TargetForwardAxisValue) * MoveSpeed * DeltaTime;
+// 	SetActorLocation(MovePosition, true);
 
+	// Tank Movement //
+	FVector CurrentLocation = GetActorLocation();
+	FVector PreviousLocation = PreviousLocation == CurrentLocation ? PreviousLocation : CurrentLocation;
+	FVector ForwardVector = GetActorForwardVector();
+	if (TargetForwardAxisValue == 0)
+	{
+		MovementInterp = MovementSmoothnes = FMath::FInterpTo(MovementSmoothnes, 0.f, DeltaTime, 6.f);
+
+		AddActorWorldOffset(UKismetMathLibrary::Multiply_VectorFloat(UKismetMathLibrary::Multiply_VectorFloat(ForwardVector, LastForwardAxisValue),
+			                FMath::FInterpConstantTo(StopInertiaFactor = FMath::Clamp(StopInertiaFactor - 0.01f, 0.f, StopInertiaFactor), 0.f, DeltaTime, MovementMomentum)), true);
+	}
+	else
+	{
+		StopInertiaFactor = FMath::FInterpTo(StopInertiaFactor, TempStopFactor, DeltaTime, StopFactorInterpSpeed);
+		LastForwardAxisValue = TankController->GetInputAxisValue("MoveForward");
+		FVector MovePosition = FMath::VInterpTo(PreviousLocation, CurrentLocation + (ForwardVector * TargetForwardAxisValue) * MoveSpeed, DeltaTime,
+							   MovementInterp = FMath::FInterpConstantTo(0.f, UKismetMathLibrary::SafeDivide(MoveSpeed, 100.f), DeltaTime,
+							   MovementSmoothnes = FMath::Clamp(MovementSmoothnes + MovementMomentum, 0.f, UKismetMathLibrary::SafeDivide(MoveSpeed, 100.f))));
+		SetActorLocation(MovePosition, true);
+	}
+	//
+
+	// Tank Rotation//
 	if(bUseBaseConstantRotationSmoothness)
 		CurrentRightAxisValue = FMath::FInterpConstantTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
 	else
@@ -88,7 +131,9 @@ void ATankPawn::Tick(float DeltaTime)
 	float YawRotation = RotationSpeed * CurrentRightAxisValue * DeltaTime;
     YawRotation += GetActorRotation().Yaw;
 	SetActorRotation({ 0.f, YawRotation, 0.f });
+	//
 
+	// TurretRotation //
 	if (TankController)
 	{
 		FVector MousePos = TankController->GetMousePos();
@@ -102,6 +147,7 @@ void ATankPawn::Tick(float DeltaTime)
 			TargetRotation = FMath::RInterpTo(CurrRotation, TargetRotation, DeltaTime, TurretRotationSmoothness);
 		TurretMesh->SetWorldRotation(TargetRotation);
 	}
+	//
 
 }
 
