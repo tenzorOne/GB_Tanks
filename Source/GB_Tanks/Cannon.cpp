@@ -156,7 +156,7 @@ void ACannon::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	MaxAmmo = CurrentAmmo;
+	CurrentAmmo = MaxAmmo;
 
 }
 
