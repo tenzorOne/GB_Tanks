@@ -3,12 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Cannon.h"
 #include "GameFramework/Pawn.h"
 #include "TankPawn.generated.h"
 
 class UStaticMeshCompinent;
 class UCameraComponent;
 class USpringArmComponent;
+class ATankPlayerController;
+class ACannon;
 
 UCLASS()
 class GB_TANKS_API ATankPawn : public APawn
@@ -22,7 +25,15 @@ public:
 	UFUNCTION()
 		void MoveForward(float AxisValue);
 	UFUNCTION()
-		void MoveRight(float AxisValue);
+		void RotateRight(float AxisValue);
+	UFUNCTION()
+		void Fire();
+	UFUNCTION()
+		void StopAutomaticFire();
+	UFUNCTION()
+		void FireSpecial();
+	UFUNCTION()
+		float GetDefaultStopFactor() { TempStopFactor = StopInertiaFactor; return TempStopFactor; };
 
 protected:
 	// Called when the game starts or when spawned
@@ -35,14 +46,42 @@ protected:
 		USpringArmComponent* SpringArm;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UCameraComponent* Camera;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		UArrowComponent* CannonSetupPoint;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon")
+		TSubclassOf<ACannon> CannonClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float MoveSpeed = 100.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed", meta = (ClampMin = "0", ClampMax = "1"))
+		float MovementMomentum = 0.25f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed", meta = (ClampMin = "0", ClampMax = "2"))
+		float StopInertiaFactor = 0.5f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed", meta = (ClampMin = "0", ClampMax = "10"))
+		float StopFactorInterpSpeed = 5.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float RotationSpeed = 100.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
+		float RotationSmoothness = 8.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
+		float TurretRotationSmoothness = 8.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Movement|Speed")
+		bool bUseBaseConstantRotationSmoothness = true;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Turret|Rotation")
+		bool bUseTurretConstantRotationSmoothness = true;
 
-	float TargetForwardAxisValue;
-	float TargetRightAxisValue;
+	float MovementInterp = 0.f;
+	float MovementSmoothnes = 0.f;
+	float TempStopFactor;
+	float TargetForwardAxisValue = 0.f;
+	float TargetRightAxisValue = 0.f;
+	float CurrentRightAxisValue = 0.f;
+	float LastForwardAxisValue = 0.f;
+
+	UPROPERTY()
+		ATankPlayerController* TankController;
+	UPROPERTY()
+		ACannon* Cannon;
 
 public:	
 	// Called every frame
@@ -50,4 +89,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+protected:
+	void SetupCannon();
+
 };
