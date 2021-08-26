@@ -44,20 +44,22 @@ void ATankPawn::BeginPlay()
 	
 	TempStopFactor = GetDefaultStopFactor();
 	TankController = Cast<ATankPlayerController>(GetController());
-	SetupCannon();
+	SetupCannon(CannonClass);
 
 }
 
 // Spawn and setup cannon on tank
-void ATankPawn::SetupCannon()
+void ATankPawn::SetupCannon(TSubclassOf<ACannon> InCannonClass)
 {
 	if (Cannon)
+	{
 		Cannon->Destroy();
+	}
 
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Instigator = this;
 	SpawnParameters.Owner = this;
-	Cannon = GetWorld()->SpawnActor<ACannon>(CannonClass, SpawnParameters);
+	Cannon = GetWorld()->SpawnActor<ACannon>(InCannonClass, SpawnParameters);
 	Cannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 }
@@ -68,9 +70,13 @@ void ATankPawn::Fire()
 	if (Cannon)
 	{
 		if (Cannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
+		{
 			Cannon->AutomaticFire();
+		}
 		else
+		{
 			Cannon->Fire();
+		}
 	}
 
 }
@@ -78,15 +84,19 @@ void ATankPawn::Fire()
 // Stop automatic fire based on Fire Action-input (IE_Released)
 void ATankPawn::StopAutomaticFire()
 {
-	if(Cannon && Cannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
+	if (Cannon && Cannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
+	{
 		Cannon->StopAutomaticFire();
+	}
 
 }
 
 void ATankPawn::FireSpecial()
 {
 	if (Cannon)
+	{
 		Cannon->FireSpecial();
+	}
 
 }
 
@@ -94,12 +104,6 @@ void ATankPawn::FireSpecial()
 void ATankPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-//  BACKUP Movement code from the training manual
-// 	FVector CurrentLocation = GetActorLocation();
-// 	FVector ForwardVector = GetActorForwardVector();
-// 	FVector MovePosition = CurrentLocation + (ForwardVector * TargetForwardAxisValue) * MoveSpeed * DeltaTime;
-// 	SetActorLocation(MovePosition, true);
 
 	// Tank Movement //
 	FVector CurrentLocation = GetActorLocation();
@@ -124,10 +128,14 @@ void ATankPawn::Tick(float DeltaTime)
 	//
 
 	// Tank Rotation//
-	if(bUseBaseConstantRotationSmoothness)
+	if (bUseBaseConstantRotationSmoothness)
+	{
 		CurrentRightAxisValue = FMath::FInterpConstantTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
+	}
 	else
+	{
 		CurrentRightAxisValue = FMath::FInterpTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
+	}
 	float YawRotation = RotationSpeed * CurrentRightAxisValue * DeltaTime;
     YawRotation += GetActorRotation().Yaw;
 	SetActorRotation({ 0.f, YawRotation, 0.f });
@@ -142,9 +150,13 @@ void ATankPawn::Tick(float DeltaTime)
 		TargetRotation.Pitch = CurrRotation.Pitch;
 		TargetRotation.Roll = CurrRotation.Roll;
 		if (bUseTurretConstantRotationSmoothness)
+		{
 			TargetRotation = FMath::RInterpConstantTo(CurrRotation, TargetRotation, DeltaTime, TurretRotationSmoothness);
+		}
 		else
+		{
 			TargetRotation = FMath::RInterpTo(CurrRotation, TargetRotation, DeltaTime, TurretRotationSmoothness);
+		}
 		TurretMesh->SetWorldRotation(TargetRotation);
 	}
 	//
@@ -167,7 +179,9 @@ void ATankPawn::MoveForward(float AxisValue)
 void ATankPawn::RotateRight(float AxisValue)
 {
 	if (TargetForwardAxisValue != 0)
-		AxisValue = TargetForwardAxisValue == 1 ? AxisValue : AxisValue * -1;
+	{
+		AxisValue = TargetForwardAxisValue >= 0 ? AxisValue : AxisValue * -1;
+	}
 	TargetRightAxisValue = AxisValue;
 
 }

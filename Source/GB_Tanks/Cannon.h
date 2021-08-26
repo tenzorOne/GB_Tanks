@@ -8,6 +8,7 @@
 #include "Cannon.generated.h"
 
 class UArrowComponent;
+class AProjectile;
 
 UCLASS()
 class GB_TANKS_API ACannon : public AActor
@@ -26,7 +27,7 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UArrowComponent* ProjectileSpawnPoint;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters", meta = (ClampMin = "0"))
-		int Ammo = 4;
+		int32 MaxAmmo = 4;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
 		float FireRate = 1.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
@@ -35,10 +36,12 @@ protected:
 		float FireDamage = 1.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
 		ECannonType CannonType = ECannonType::FireProjectile;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
+		TSubclassOf<AProjectile> ProjectileClass;
 
 	FTimerHandle ReloadTimerHandle;
-	bool ReadyToFire = true;
-	int MaxAmmo;
+	bool bReadyToFire = true;
+	int32 CurrentAmmo;
 
 public:	
 	// Called every frame

@@ -34,6 +34,8 @@ public:
 		void FireSpecial();
 	UFUNCTION()
 		float GetDefaultStopFactor() { TempStopFactor = StopInertiaFactor; return TempStopFactor; };
+	UFUNCTION()
+		void SetupCannon(TSubclassOf<ACannon> InCannonClass);
 
 protected:
 	// Called when the game starts or when spawned
@@ -89,8 +91,5 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-protected:
-	void SetupCannon();
 
 };
