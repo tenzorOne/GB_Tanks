@@ -35,5 +35,6 @@ protected:
 	void Fire();
 	void StopAutomaticFire();
 	void FireSpecial();
+	void ChangeWeapon();
 
 };

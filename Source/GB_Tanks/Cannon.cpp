@@ -133,6 +133,13 @@ void ACannon::FireSpecial()
 
 }
 
+void ACannon::AddAmmo(int32 AmmoToAdd)
+{
+	AmmoToAdd = FMath::Clamp(AmmoToAdd, 0, MaxAmmo - CurrentAmmo);
+	CurrentAmmo += AmmoToAdd;
+	GEngine->AddOnScreenDebugMessage(-1, 6, FColor::Yellow, FString("You picked up ") + FString::FromInt(AmmoToAdd) + FString(" and you current ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
+}
+
 void ACannon::Reload()
 {
 	bReadyToFire = true;
@@ -166,4 +173,3 @@ void ACannon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-

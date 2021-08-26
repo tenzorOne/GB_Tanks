@@ -52,6 +52,7 @@ public:
 	void StopAutomaticFire();
 	void FireSpecial();
 	bool IsReadyToFire();
+	void AddAmmo(int32 AmmoToAdd);
 
 protected:
 	void Reload();
