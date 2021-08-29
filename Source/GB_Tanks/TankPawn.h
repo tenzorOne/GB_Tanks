@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TowerMachineMaster.h"
 #include "Cannon.h"
 #include "GameFramework/Pawn.h"
 #include "TankPawn.generated.h"
@@ -14,7 +15,7 @@ class ATankPlayerController;
 class ACannon;
 
 UCLASS()
-class GB_TANKS_API ATankPawn : public APawn
+class GB_TANKS_API ATankPawn : public ATowerMachineMaster
 {
 	GENERATED_BODY()
 
@@ -27,37 +28,28 @@ public:
 	UFUNCTION()
 		void RotateRight(float AxisValue);
 	UFUNCTION()
-		void Fire();
+		void SetupAnotherCannon(TSubclassOf<ACannon> CannonClassToSetup, bool bPickupNewCannon);
 	UFUNCTION()
-		void StopAutomaticFire();
+		void StartFire();
+	UFUNCTION()
+		void StopFire();
 	UFUNCTION()
 		void FireSpecial();
 	UFUNCTION()
+		void SwitchCannon();
+	UFUNCTION()
 		float GetDefaultStopFactor() { TempStopFactor = StopInertiaFactor; return TempStopFactor; };
-	UFUNCTION()
-		void SetupCannon(ACannon* CurrentCannon, TSubclassOf<ACannon> InCannonClass);
-	UFUNCTION()
-		void InstallNewCannon(TSubclassOf<ACannon> InCannonClass);
-	UFUNCTION()
-		void ChangeWeapon();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		UStaticMeshComponent* BodyMesh;
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		UStaticMeshComponent* TurretMesh;
+
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		USpringArmComponent* SpringArm;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UCameraComponent* Camera;
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		UArrowComponent* CannonSetupPoint;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon")
-		TSubclassOf<ACannon> MainCannonClass;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon")
-		TSubclassOf<ACannon> SecondCannonClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon", meta = (DisplayPriority = "2"))
+		TSubclassOf<ACannon> SecondCannonClass = CannonClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float MoveSpeed = 100.f;
@@ -85,12 +77,12 @@ protected:
 	float TargetRightAxisValue = 0.f;
 	float CurrentRightAxisValue = 0.f;
 	float LastForwardAxisValue = 0.f;
-	bool bIsMainCannon = true;
+	bool bSwitchCannon = false;
 
 	UPROPERTY()
 		ATankPlayerController* TankController;
 	UPROPERTY()
-		ACannon* MainCannon;
+		ACannon* FirstCannon;
 	UPROPERTY()
 		ACannon* SecondCannon;
 
@@ -101,8 +93,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public:
 	UPROPERTY()
-	ACannon* CurrentCannon;
+		ACannon* ActiveCannon;
 
 };

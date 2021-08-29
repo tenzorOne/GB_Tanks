@@ -28,87 +28,90 @@ ACannon::ACannon()
 }
 
 // Cannon fire functional
-void ACannon::Fire()
+void ACannon::StartFire()
 {
 	if (CurrentAmmo == 0)
 	{
-		GEngine->AddOnScreenDebugMessage(10, 5, FColor::Orange, "NOT ENOUGH AMMO!");
+		GEngine->AddOnScreenDebugMessage(10, 2, FColor::Orange, "NOT ENOUGH AMMO!");
 		return;
 	}
 	
-	if (!bReadyToFire)
-	{
-		return;
-	}
-	bReadyToFire = false;
-
-	if (CannonType == ECannonType::FireProjectile)
-	{
-		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
-		if (Projectile)
-		{
-			Projectile->Start();
-		}
-
-		CurrentAmmo--;
-		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString("Ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
-		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, "Fire: Projectile");
-	}
-	else if (CannonType == ECannonType::FireTrace)
-	{
-		FHitResult HitResult;
-		FCollisionQueryParams TraceParamas = FCollisionQueryParams(FName(TEXT("FireTrace")), true, this);
-		TraceParamas.bTraceComplex = true;
-		TraceParamas.bReturnPhysicalMaterial = false;
-		FVector TraceStart = ProjectileSpawnPoint->GetComponentLocation();
-		FVector TraceEnd = ProjectileSpawnPoint->GetForwardVector() * FireRange + TraceStart;
-		
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility, TraceParamas))
-		{
-			DrawDebugLine(GetWorld(), TraceStart, HitResult.Location, FColor::Red, false, 0.5f, 0, 5);
-			if (HitResult.Actor.Get())
-			{
-				HitResult.Actor.Get()->Destroy();
-			}
-		}
-		else
-		{
-			DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 0.5f, 0, 5);
-		}
-		
-		CurrentAmmo--;
-		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, FString("Ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
-		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, "Fire: Hit-Scan");
-	}
-
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
-
-}
-
-// Automatic cannon fire functional
-void ACannon::AutomaticFire()
-{
 	if (bReadyToFire)
 	{
-		if (CurrentAmmo != 0)
+		if (CannonType == ECannonType::FireProjectile)
 		{
+			bReadyToFire = false;
+			
 			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
+			
 			if (Projectile)
 			{
 				Projectile->Start();
+				--CurrentAmmo;
 			}
+
+			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString("Ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
+			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, "Fire: Projectile");
+
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
+		}
+		else if (CannonType == ECannonType::FireAutomaticProjectile)
+		{
+			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
 			
-			CurrentAmmo--;
+			if (Projectile)
+			{
+				Projectile->Start();
+				--CurrentAmmo;
+			}
+
 			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::White, FString("Ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
 			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::White, "Fire: Automatic Projectile");
-			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::AutomaticFire, 1.f / FireRate, false);
-		}
-		else
-			GEngine->AddOnScreenDebugMessage(10, 5, FColor::Orange, "NOT ENOUGH AMMO!");
-	}
-	else
-		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
 
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::StartFire, 1.f / FireRate, false);
+
+		}
+		else if (CannonType == ECannonType::FireTrace)
+		{
+			bReadyToFire = false;
+
+			FHitResult HitResult;
+			FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("FireTrace")), true, this);
+			TraceParams.bTraceComplex = true;
+			TraceParams.bReturnPhysicalMaterial = false;
+			FVector TraceStart = ProjectileSpawnPoint->GetComponentLocation();
+			FVector TraceEnd = ProjectileSpawnPoint->GetForwardVector() * FireRange + TraceStart;
+
+			if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility, TraceParams))
+			{
+				DrawDebugLine(GetWorld(), TraceStart, HitResult.Location, FColor::Red, false, 0.5f, 0, 5);
+				if (HitResult.Actor.Get())
+				{
+					HitResult.Actor.Get()->Destroy();
+				}
+				--CurrentAmmo;
+			}
+			else
+			{
+				DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 0.5f, 0, 5);
+				--CurrentAmmo;
+			}
+
+			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, FString("Ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
+			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, "Fire: Hit-Scan");
+
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
+		}
+	}
+
+}
+
+void ACannon::StopFire()
+{
+	if (CannonType == ECannonType::FireAutomaticProjectile)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
+	}
 }
 
 // Special cannon fire functional (on RMB)
@@ -116,20 +119,21 @@ void ACannon::FireSpecial()
 {
 	if (CurrentAmmo == 0)
 	{
-		GEngine->AddOnScreenDebugMessage(10, 5, FColor::Orange, "NOT ENOUGH AMMO!");
+		GEngine->AddOnScreenDebugMessage(10, 2, FColor::Orange, "NOT ENOUGH AMMO!");
 		return;
 	}
 	
-	if (!bReadyToFire)
+	if (bReadyToFire)
 	{
-		return;
-	}
-	bReadyToFire = false;
+		bReadyToFire = false;
 
-	CurrentAmmo--;
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, FString("Ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, "SPECIAL FIRE");
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
+		--CurrentAmmo;
+		
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, FString("Ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, "SPECIAL FIRE");
+		
+		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
+	}
 
 }
 
@@ -138,17 +142,12 @@ void ACannon::AddAmmo(int32 AmmoToAdd)
 	AmmoToAdd = FMath::Clamp(AmmoToAdd, 0, MaxAmmo - CurrentAmmo);
 	CurrentAmmo += AmmoToAdd;
 	GEngine->AddOnScreenDebugMessage(-1, 6, FColor::Yellow, FString("You picked up ") + FString::FromInt(AmmoToAdd) + FString(" and you current ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
+
 }
 
 void ACannon::Reload()
 {
 	bReadyToFire = true;
-
-}
-
-void ACannon::StopAutomaticFire()
-{
-	bReadyToFire = false;
 
 }
 

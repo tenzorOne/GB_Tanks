@@ -47,9 +47,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	ECannonType GetCannonType() { return CannonType; };
-	void Fire();
-	void AutomaticFire();
-	void StopAutomaticFire();
+	void StartFire();
+	void StopFire();
 	void FireSpecial();
 	bool IsReadyToFire();
 	void AddAmmo(int32 AmmoToAdd);

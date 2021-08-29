@@ -17,9 +17,9 @@ void ATankPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("MoveForward", this, &ATankPlayerController::MoveForward);
 	InputComponent->BindAxis("RotateRight", this, &ATankPlayerController::RotateRight);
 	InputComponent->BindAction("Fire", IE_Pressed, this, &ATankPlayerController::Fire);
-	InputComponent->BindAction("Fire", IE_Released, this, &ATankPlayerController::StopAutomaticFire);
+	InputComponent->BindAction("Fire", IE_Released, this, &ATankPlayerController::StopFire);
 	InputComponent->BindAction("AlternativeFire", IE_Pressed, this, &ATankPlayerController::FireSpecial);
-	InputComponent->BindAction("ChangeCannon", IE_Pressed, this, &ATankPlayerController::ChangeWeapon);
+	InputComponent->BindAction("SwitchCannon", IE_Pressed, this, &ATankPlayerController::SwitchCannon);
 
 }
 
@@ -49,13 +49,13 @@ void ATankPlayerController::Tick(float DeltaTime)
 
 void ATankPlayerController::Fire()
 {
-	TankPawn->Fire();
+	TankPawn->StartFire();
 
 }
 
-void ATankPlayerController::StopAutomaticFire()
+void ATankPlayerController::StopFire()
 {
-	TankPawn->StopAutomaticFire();
+	TankPawn->StopFire();
 
 }
 
@@ -77,7 +77,7 @@ void ATankPlayerController::RotateRight(float AxisValue)
 
 }
 
-void ATankPlayerController::ChangeWeapon()
+void ATankPlayerController::SwitchCannon()
 {
-	TankPawn->ChangeWeapon();
+	TankPawn->SwitchCannon();
 }
