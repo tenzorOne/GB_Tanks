@@ -49,6 +49,7 @@ void ATowerMachineMaster::SetupPlayerInputComponent(UInputComponent* PlayerInput
 void ATowerMachineMaster::SetupCannon(TSubclassOf<ACannon> CannonClassToSetup)
 {
 	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Instigator = this;
 	SpawnParameters.Owner = this;
 
 	Cannon = GetWorld()->SpawnActor<ACannon>(CannonClassToSetup, SpawnParameters);

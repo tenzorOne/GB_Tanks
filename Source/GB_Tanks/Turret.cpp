@@ -11,6 +11,10 @@ ATurret::ATurret()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+	HealthComponent->OnDamaged.AddUObject(this, &ATurret::DamageTaked);
+	HealthComponent->OnDie.AddUObject(this, &ATurret::Die);
+
 	HitCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Hit Collider"));
 	HitCollider->SetupAttachment(TurretMesh);
 
@@ -63,6 +67,7 @@ void ATurret::RotateToPlayer()
 bool ATurret::IsPlayerInRange()
 {
 	return FVector::Distance(PlayerPawn->GetActorLocation(), GetActorLocation()) <= TargetingRange;
+
 }
 
 bool ATurret::CanFire()
@@ -81,4 +86,22 @@ void ATurret::Fire()
 	{
 		Cannon->StartFire();
 	}
+
+}
+
+void ATurret::TakeDamage(FDamageData DamageData)
+{
+	HealthComponent->TakeDamage(DamageData);
+
+}
+
+void ATurret::Die()
+{
+	Destroy();
+
+}
+
+void ATurret::DamageTaked(float DamageValue)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Turret %s taked damage:%f Health:%f"), *GetName(), DamageValue, HealthComponent->GetHealth());
 }

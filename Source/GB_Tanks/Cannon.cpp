@@ -46,6 +46,7 @@ void ACannon::StartFire()
 			
 			if (Projectile)
 			{
+				Projectile->SetInstigator(GetInstigator());
 				Projectile->Start();
 				--CurrentAmmo;
 			}
@@ -61,6 +62,7 @@ void ACannon::StartFire()
 			
 			if (Projectile)
 			{
+				Projectile->SetInstigator(GetInstigator());
 				Projectile->Start();
 				--CurrentAmmo;
 			}
