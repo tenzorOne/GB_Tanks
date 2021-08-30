@@ -13,7 +13,7 @@ class GB_TANKS_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	DECLARE_EVENT(UHealthComponent, FOnDie)
+	DECLARE_EVENT_OneParam(UHealthComponent, FOnDie, AActor*)
 
 public:	
 	// Sets default values for this component's properties
@@ -31,13 +31,12 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health Parameters")
-		float MaxHealth = 10;
+		float MaxHealth = 10.f;
 	UPROPERTY()
 		float CurrentHealth;
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 		
 };

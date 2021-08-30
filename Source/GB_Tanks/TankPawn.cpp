@@ -110,10 +110,9 @@ void ATankPawn::SwitchCannon()
 
 }
 
-void ATankPawn::Die()
+void ATankPawn::Die(AActor* DamageMaker)
 {
-	ATowerMachineMaster::Die();
-	
+	Destroy();
 	UKismetSystemLibrary::QuitGame(GetWorld(), TankController, EQuitPreference::Quit, false);
 
 }

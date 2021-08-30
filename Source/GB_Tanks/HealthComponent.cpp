@@ -9,7 +9,6 @@ UHealthComponent::UHealthComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-	CurrentHealth = MaxHealth;
 
 	// ...
 }
@@ -19,11 +18,11 @@ UHealthComponent::UHealthComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	CurrentHealth = MaxHealth;
 
 	// ...
-	
 }
-
 
 // Called every frame
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -46,13 +45,14 @@ float UHealthComponent::GetHealthState() const
 void UHealthComponent::TakeDamage(FDamageData DamageData)
 {
 	float TakedDamageValue = DamageData.DamageValue;
+	AActor* DamageMaker = DamageData.DamageMaker;
 	CurrentHealth -= TakedDamageValue;
 
 	if (CurrentHealth <= 0)
 	{
 		if (OnDie.IsBound())
 		{
-			OnDie.Broadcast();
+			OnDie.Broadcast(DamageMaker);
 		}
 	}
 

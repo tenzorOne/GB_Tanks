@@ -40,7 +40,7 @@ public:
 	UFUNCTION()
 		float GetDefaultStopFactor() { TempStopFactor = StopInertiaFactor; return TempStopFactor; };
 	UFUNCTION()
-		virtual void Die() override;
+		virtual void Die(AActor* DamageMaker) override;
 
 protected:
 	// Called when the game starts or when spawned

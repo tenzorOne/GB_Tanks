@@ -24,5 +24,6 @@ class GB_TANKS_API IDamageTaker
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	virtual void TakeDamage(FDamageData DamageData) = 0;
+	virtual void EarningPoints(int32 Points) = 0;
 
 };

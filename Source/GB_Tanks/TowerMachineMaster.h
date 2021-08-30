@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Cannon.h"
-#include "HealthComponent.h"
 #include "DamageTaker.h"
 #include "TowerMachineMaster.generated.h"
 
+class UHealthComponent;
 class ATankPlayerController;
 class UStaticMeshCompinent;
 class UCameraComponent;
@@ -38,6 +38,8 @@ protected:
 		TSubclassOf<ACannon> CannonClass = ACannon::StaticClass();
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UHealthComponent* HealthComponent;
+	UPROPERTY(BlueprintReadOnly, Category = "Score Points")
+		int32 CurrentPoints = 0;
 
 	UPROPERTY()
 		ACannon* Cannon;
@@ -49,10 +51,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void Die();
+	virtual void Die(AActor* DamageMaker);
 
 	UFUNCTION()
 		virtual void TakeDamage(FDamageData DamageData) override;
+	UFUNCTION()
+		virtual void EarningPoints(int32 Points) override;
 	UFUNCTION()
 		void SetupCannon(TSubclassOf<ACannon> CannonClassToSetup);
 

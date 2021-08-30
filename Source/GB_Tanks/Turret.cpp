@@ -54,7 +54,7 @@ void ATurret::RotateToPlayer()
 {
 	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), PlayerPawn->GetActorLocation());
 	TargetRotation.Roll = TurretMesh->GetComponentRotation().Roll;
-	TurretMesh->SetWorldRotation(TargetRotation);
+	TurretMesh->SetWorldRotation(FMath::RInterpConstantTo(TurretMesh->GetComponentRotation(), TargetRotation, GetWorld()->GetDeltaSeconds(), TargetingSpeed));
 
 }
 

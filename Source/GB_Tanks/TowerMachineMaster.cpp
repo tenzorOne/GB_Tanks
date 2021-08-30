@@ -5,6 +5,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
 #include "TankPlayerController.h"
+#include "Projectile.h"
+#include "HealthComponent.h"
 
 // Sets default values
 ATowerMachineMaster::ATowerMachineMaster()
@@ -66,8 +68,20 @@ void ATowerMachineMaster::TakeDamage(FDamageData DamageData)
 
 }
 
-void ATowerMachineMaster::Die()
+void ATowerMachineMaster::Die(AActor* DamageMaker)
 {
+	if (Cast<AProjectile>(DamageMaker) || Cast<ACannon>(DamageMaker))
+	{		
+		EarningPoints(5);
+
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString("Destroy Something and earning points! Current points: ") + FString::FromInt(CurrentPoints));
+	}
 	Destroy();
+
+}
+
+void ATowerMachineMaster::EarningPoints(int32 Points)
+{
+	CurrentPoints = Points;
 
 }
