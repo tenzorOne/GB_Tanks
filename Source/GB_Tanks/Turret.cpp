@@ -10,10 +10,6 @@
 ATurret::ATurret()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
-	HealthComponent->OnDamaged.AddUObject(this, &ATurret::DamageTaked);
-	HealthComponent->OnDie.AddUObject(this, &ATurret::Die);
 
 	HitCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Hit Collider"));
 	HitCollider->SetupAttachment(TurretMesh);
@@ -56,11 +52,9 @@ void ATurret::Targeting()
 
 void ATurret::RotateToPlayer()
 {
-	FRotator CurrentRotation = TurretMesh->GetComponentRotation();
-	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerPawn->GetActorLocation());
-	TargetRotation.Pitch = CurrentRotation.Pitch;
-	TargetRotation.Roll = CurrentRotation.Roll;
-	TurretMesh->SetWorldRotation(FMath::RInterpConstantTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), TargetingSpeed));
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), PlayerPawn->GetActorLocation());
+	TargetRotation.Roll = TurretMesh->GetComponentRotation().Roll;
+	TurretMesh->SetWorldRotation(TargetRotation);
 
 }
 
@@ -73,11 +67,12 @@ bool ATurret::IsPlayerInRange()
 bool ATurret::CanFire()
 {
 	FVector TargetDirection = TurretMesh->GetForwardVector();
-	FVector DirectionToPlayer = PlayerPawn->GetActorLocation() - GetActorLocation();
+	FVector DirectionToPlayer = PlayerPawn->GetActorLocation() - TurretMesh->GetComponentLocation();
 	DirectionToPlayer.Normalize();
 	float AimAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(TargetDirection, DirectionToPlayer)));
 	
 	return AimAngle <= Accurency;
+
 }
 
 void ATurret::Fire()
@@ -87,21 +82,4 @@ void ATurret::Fire()
 		Cannon->StartFire();
 	}
 
-}
-
-void ATurret::TakeDamage(FDamageData DamageData)
-{
-	HealthComponent->TakeDamage(DamageData);
-
-}
-
-void ATurret::Die()
-{
-	Destroy();
-
-}
-
-void ATurret::DamageTaked(float DamageValue)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Turret %s taked damage:%f Health:%f"), *GetName(), DamageValue, HealthComponent->GetHealth());
 }

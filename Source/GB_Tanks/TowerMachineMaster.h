@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Cannon.h"
+#include "HealthComponent.h"
+#include "DamageTaker.h"
 #include "TowerMachineMaster.generated.h"
 
 class ATankPlayerController;
@@ -14,7 +16,7 @@ class USpringArmComponent;
 class ACannon;
 
 UCLASS()
-class GB_TANKS_API ATowerMachineMaster : public APawn
+class GB_TANKS_API ATowerMachineMaster : public APawn, public IDamageTaker
 {
 	GENERATED_BODY()
 
@@ -34,6 +36,8 @@ protected:
 		UArrowComponent* CannonSetupPoint;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon", meta = (DisplayPriority = "1"))
 		TSubclassOf<ACannon> CannonClass = ACannon::StaticClass();
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		UHealthComponent* HealthComponent;
 
 	UPROPERTY()
 		ACannon* Cannon;
@@ -45,6 +49,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void Die();
+
+	UFUNCTION()
+		virtual void TakeDamage(FDamageData DamageData) override;
 	UFUNCTION()
 		void SetupCannon(TSubclassOf<ACannon> CannonClassToSetup);
 

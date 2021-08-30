@@ -6,8 +6,6 @@
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "TowerMachineMaster.h"
-#include "DamageTaker.h"
-#include "HealthComponent.h"
 #include "Turret.generated.h"
 
 class UBoxComponent;
@@ -17,19 +15,12 @@ class APawn;
  * 
  */
 UCLASS()
-class GB_TANKS_API ATurret : public ATowerMachineMaster, public IDamageTaker
+class GB_TANKS_API ATurret : public ATowerMachineMaster
 {
 	GENERATED_BODY()
 
 public:
 	ATurret();
-
-	UFUNCTION()
-		virtual void TakeDamage(FDamageData DamageData) override;
-	UFUNCTION()
-		void DamageTaked(float DamageValue);
-	UFUNCTION()
-		void Die();
 
 protected:
 	virtual void BeginPlay() override;
@@ -42,8 +33,6 @@ protected:
 	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UBoxComponent* HitCollider;
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		UHealthComponent* HealthComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting")
 		float TargetingRange = 1000;

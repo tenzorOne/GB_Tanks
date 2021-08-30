@@ -39,6 +39,8 @@ public:
 		void SwitchCannon();
 	UFUNCTION()
 		float GetDefaultStopFactor() { TempStopFactor = StopInertiaFactor; return TempStopFactor; };
+	UFUNCTION()
+		virtual void Die() override;
 
 protected:
 	// Called when the game starts or when spawned

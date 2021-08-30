@@ -55,13 +55,6 @@ void UHealthComponent::TakeDamage(FDamageData DamageData)
 			OnDie.Broadcast();
 		}
 	}
-	else
-	{
-		if (OnDamaged.IsBound())
-		{
-			OnDamaged.Broadcast(TakedDamageValue);
-		}
-	}
 
 }
 

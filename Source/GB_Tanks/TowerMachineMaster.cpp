@@ -21,6 +21,9 @@ ATowerMachineMaster::ATowerMachineMaster()
 	CannonSetupPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Cannon Setup Point"));
 	CannonSetupPoint->AttachToComponent(TurretMesh, FAttachmentTransformRules::KeepRelativeTransform);
 
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+	HealthComponent->OnDie.AddUObject(this, &ATowerMachineMaster::Die);
+
 }
 
 // Called when the game starts or when spawned
@@ -54,5 +57,17 @@ void ATowerMachineMaster::SetupCannon(TSubclassOf<ACannon> CannonClassToSetup)
 
 	Cannon = GetWorld()->SpawnActor<ACannon>(CannonClassToSetup, SpawnParameters);
 	Cannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+}
+
+void ATowerMachineMaster::TakeDamage(FDamageData DamageData)
+{
+	HealthComponent->TakeDamage(DamageData);
+
+}
+
+void ATowerMachineMaster::Die()
+{
+	Destroy();
 
 }

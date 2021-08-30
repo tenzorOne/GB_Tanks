@@ -8,6 +8,7 @@
 #include "Projectile.h"
 #include "DrawDebugHelpers.h"
 #include "TimerManager.h"
+#include "DamageTaker.h"
 #include "Engine/Engine.h"
 
 // Sets default values
@@ -89,7 +90,18 @@ void ACannon::StartFire()
 				DrawDebugLine(GetWorld(), TraceStart, HitResult.Location, FColor::Red, false, 0.5f, 0, 5);
 				if (HitResult.Actor.Get())
 				{
-					HitResult.Actor.Get()->Destroy();
+					if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(HitResult.Actor.Get()))
+					{
+						FDamageData DamageData;
+						DamageData.DamageValue = FireDamage;
+						DamageData.DamageMaker = this;
+						DamageData.Instigator = GetInstigator();
+						DamageTaker->TakeDamage(DamageData);
+					}
+					else
+					{
+						HitResult.Actor.Get()->Destroy();
+					}
 				}
 				--CurrentAmmo;
 			}

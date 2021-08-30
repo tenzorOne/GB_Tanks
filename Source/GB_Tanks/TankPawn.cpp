@@ -4,6 +4,7 @@
 #include "TankPawn.h"
 #include "Math/Vector.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -106,6 +107,14 @@ void ATankPawn::SwitchCannon()
 	{
 		return;
 	}
+
+}
+
+void ATankPawn::Die()
+{
+	ATowerMachineMaster::Die();
+	
+	UKismetSystemLibrary::QuitGame(GetWorld(), TankController, EQuitPreference::Quit, false);
 
 }
 
