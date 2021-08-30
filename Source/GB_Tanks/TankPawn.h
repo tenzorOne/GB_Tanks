@@ -35,7 +35,11 @@ public:
 	UFUNCTION()
 		float GetDefaultStopFactor() { TempStopFactor = StopInertiaFactor; return TempStopFactor; };
 	UFUNCTION()
-		void SetupCannon(TSubclassOf<ACannon> InCannonClass);
+		void SetupCannon(ACannon* CurrentCannon, TSubclassOf<ACannon> InCannonClass);
+	UFUNCTION()
+		void InstallNewCannon(TSubclassOf<ACannon> InCannonClass);
+	UFUNCTION()
+		void ChangeWeapon();
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,7 +55,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UArrowComponent* CannonSetupPoint;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon")
-		TSubclassOf<ACannon> CannonClass;
+		TSubclassOf<ACannon> MainCannonClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon")
+		TSubclassOf<ACannon> SecondCannonClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float MoveSpeed = 100.f;
@@ -79,11 +85,14 @@ protected:
 	float TargetRightAxisValue = 0.f;
 	float CurrentRightAxisValue = 0.f;
 	float LastForwardAxisValue = 0.f;
+	bool bIsMainCannon = true;
 
 	UPROPERTY()
 		ATankPlayerController* TankController;
 	UPROPERTY()
-		ACannon* Cannon;
+		ACannon* MainCannon;
+	UPROPERTY()
+		ACannon* SecondCannon;
 
 public:	
 	// Called every frame
@@ -91,5 +100,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+public:
+	UPROPERTY()
+	ACannon* CurrentCannon;
 
 };

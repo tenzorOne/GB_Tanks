@@ -44,38 +44,101 @@ void ATankPawn::BeginPlay()
 	
 	TempStopFactor = GetDefaultStopFactor();
 	TankController = Cast<ATankPlayerController>(GetController());
-	SetupCannon(CannonClass);
-
+	SetupCannon(MainCannon, MainCannonClass);
+	SetupCannon(SecondCannon, SecondCannonClass);
 }
 
 // Spawn and setup cannon on tank
-void ATankPawn::SetupCannon(TSubclassOf<ACannon> InCannonClass)
+void ATankPawn::SetupCannon(ACannon* InCurrentCannon, TSubclassOf<ACannon> InCannonClass)
 {
-	if (Cannon)
+	if (InCurrentCannon)
 	{
-		Cannon->Destroy();
+		InCurrentCannon->Destroy();
 	}
 
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Instigator = this;
 	SpawnParameters.Owner = this;
-	Cannon = GetWorld()->SpawnActor<ACannon>(InCannonClass, SpawnParameters);
-	Cannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	InCurrentCannon = GetWorld()->SpawnActor<ACannon>(InCannonClass, SpawnParameters);
+	if (bIsMainCannon)
+	{
+		MainCannon = InCurrentCannon;
+		InCurrentCannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		CurrentCannon = InCurrentCannon;
+		bIsMainCannon = false;
+	}
+	else
+	{
+		SecondCannon = InCurrentCannon;
+		InCurrentCannon->SetActorHiddenInGame(true);
+		InCurrentCannon->SetActorLocation({ 0.f, 0.f, 0.f });
+		bIsMainCannon = true;
+	}
 
+}
+
+void ATankPawn::InstallNewCannon(TSubclassOf<ACannon> InCannonClass)
+{
+	if (CurrentCannon)
+	{
+		CurrentCannon->Destroy();
+	}
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Instigator = this;
+	SpawnParameters.Owner = this;
+	CurrentCannon = GetWorld()->SpawnActor<ACannon>(InCannonClass, SpawnParameters);
+	if (bIsMainCannon)
+	{
+		MainCannon = CurrentCannon;
+	}
+	else
+	{
+		SecondCannon = CurrentCannon;
+	}
+
+	CurrentCannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+}
+
+void ATankPawn::ChangeWeapon()
+{
+	if (CurrentCannon)
+	{
+		if (bIsMainCannon)
+		{
+			CurrentCannon->SetActorHiddenInGame(true);
+			CurrentCannon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			CurrentCannon->SetActorLocation({ 0.f, 0.f, 0.f });
+			CurrentCannon = SecondCannon;
+			CurrentCannon->SetActorHiddenInGame(false);
+			CurrentCannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			bIsMainCannon = false;
+		}
+		else
+		{
+			CurrentCannon->SetActorHiddenInGame(true);
+			CurrentCannon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			CurrentCannon->SetActorLocation({ 0.f, 0.f, 0.f });
+			CurrentCannon = MainCannon;
+			CurrentCannon->SetActorHiddenInGame(false);
+			CurrentCannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			bIsMainCannon = true;
+		}
+	}
 }
 
 // Call the correct method based on the current Cannon type
 void ATankPawn::Fire()
 {
-	if (Cannon)
+	if (CurrentCannon)
 	{
-		if (Cannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
+		if (CurrentCannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
 		{
-			Cannon->AutomaticFire();
+			CurrentCannon->AutomaticFire();
 		}
 		else
 		{
-			Cannon->Fire();
+			CurrentCannon->Fire();
 		}
 	}
 
@@ -84,18 +147,18 @@ void ATankPawn::Fire()
 // Stop automatic fire based on Fire Action-input (IE_Released)
 void ATankPawn::StopAutomaticFire()
 {
-	if (Cannon && Cannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
+	if (CurrentCannon && CurrentCannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
 	{
-		Cannon->StopAutomaticFire();
+		CurrentCannon->StopAutomaticFire();
 	}
 
 }
 
 void ATankPawn::FireSpecial()
 {
-	if (Cannon)
+	if (CurrentCannon)
 	{
-		Cannon->FireSpecial();
+		CurrentCannon->FireSpecial();
 	}
 
 }

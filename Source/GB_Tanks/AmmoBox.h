@@ -15,9 +15,12 @@ class GB_TANKS_API AAmmoBox : public AActor
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UStaticMeshComponent* Mesh;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
+		bool bOnlyAmmoBox = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo", meta = (EditCondition = "!bOnlyAmmoBox", EditConditionHides))
 		TSubclassOf<ACannon> CannonClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo", meta = (EditCondition = "bOnlyAmmoBox", EditConditionHides))
+		int32 AmmoToAdd = 1;
 
 public:
 	AAmmoBox();
