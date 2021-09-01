@@ -7,7 +7,6 @@
 #include "TimerManager.h"
 #include "DamageTaker.h"
 #include "Engine/World.h"
-#include "GameStructs.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -38,11 +37,18 @@ void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	{
 		if (OtherActor != GetInstigator())
 		{
-			FDamageData DamageData;
 			DamageData.DamageValue = Damage;
 			DamageData.DamageMaker = this;
 			DamageData.Instigator = GetInstigator();
 			DamageTaker->TakeDamage(DamageData);
+			
+			if (DamageData.bTargetKilled)
+			{
+				if (OnDestroyTarget.IsBound())
+				{
+					OnDestroyTarget.Broadcast();
+				}
+			}
 		}
 	}
 

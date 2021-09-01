@@ -45,7 +45,7 @@ void ATurret::Targeting()
 
 	if (Cannon && Cannon->IsReadyToFire() && CanFire())
 	{
-		Fire();
+		Cannon->StartFire();
 	}
 
 }
@@ -72,14 +72,5 @@ bool ATurret::CanFire()
 	float AimAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(TargetDirection, DirectionToPlayer)));
 	
 	return AimAngle <= Accurency;
-
-}
-
-void ATurret::Fire()
-{
-	if (Cannon)
-	{
-		Cannon->StartFire();
-	}
 
 }

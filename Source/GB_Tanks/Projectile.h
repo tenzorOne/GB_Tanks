@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameStructs.h"
 #include "Projectile.generated.h"
 
 UCLASS()
@@ -11,9 +12,13 @@ class GB_TANKS_API AProjectile : public AActor
 {
 	GENERATED_BODY()
 	
+	DECLARE_EVENT(AProjectile, FOnDestroyTarget)
+
 public:	
 	// Sets default values for this actor's properties
 	AProjectile();
+
+	FOnDestroyTarget OnDestroyTarget;
 
 	void Start();
 
@@ -31,11 +36,11 @@ protected:
 		float Damage = 1.f;
 
 	FTimerHandle MovementTimerHandle;
+	FDamageData DamageData;
 
 protected:
 	UFUNCTION()
 		void OnMeshOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
 	UFUNCTION()
 		void Move();
 

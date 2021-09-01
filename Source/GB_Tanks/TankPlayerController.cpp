@@ -49,35 +49,54 @@ void ATankPlayerController::Tick(float DeltaTime)
 
 void ATankPlayerController::Fire()
 {
-	TankPawn->StartFire();
+	if (TankPawn)
+	{
+		TankPawn->StartFire();
+	}
 
 }
 
 void ATankPlayerController::StopFire()
 {
-	TankPawn->StopFire();
+	if (TankPawn)
+	{
+		TankPawn->StopFire();
+	}
 
 }
 
 void ATankPlayerController::FireSpecial()
 {
-	TankPawn->FireSpecial();
+	if (TankPawn)
+	{
+		TankPawn->FireSpecial();
+	}
 
 }
 
 void ATankPlayerController::MoveForward(float AxisValue)
 {
-	TankPawn->MoveForward(AxisValue);
+	if (TankPawn)
+	{
+		TankPawn->MoveForward(AxisValue);
+	}
 
 }
 
 void ATankPlayerController::RotateRight(float AxisValue)
 {
-	TankPawn->RotateRight(AxisValue);
+	if (TankPawn)
+	{
+		TankPawn->RotateRight(AxisValue);
+	}
 
 }
 
 void ATankPlayerController::SwitchCannon()
 {
-	TankPawn->SwitchCannon();
+	if (TankPawn)
+	{
+		TankPawn->SwitchCannon();
+	}
+
 }

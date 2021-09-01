@@ -30,10 +30,6 @@ public:
 	UFUNCTION()
 		void SetupAnotherCannon(TSubclassOf<ACannon> CannonClassToSetup, bool bPickupNewCannon);
 	UFUNCTION()
-		void StartFire();
-	UFUNCTION()
-		void StopFire();
-	UFUNCTION()
 		void FireSpecial();
 	UFUNCTION()
 		void SwitchCannon();
@@ -74,7 +70,7 @@ protected:
 
 	float MovementInterp = 0.f;
 	float MovementSmoothnes = 0.f;
-	float TempStopFactor;
+	float TempStopFactor = 0.f;
 	float TargetForwardAxisValue = 0.f;
 	float TargetRightAxisValue = 0.f;
 	float CurrentRightAxisValue = 0.f;
@@ -94,8 +90,5 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UPROPERTY()
-		ACannon* ActiveCannon;
 
 };

@@ -42,7 +42,7 @@ float UHealthComponent::GetHealthState() const
 	return CurrentHealth / MaxHealth;
 }
 
-void UHealthComponent::TakeDamage(FDamageData DamageData)
+void UHealthComponent::TakeDamage(FDamageData& DamageData)
 {
 	float TakedDamageValue = DamageData.DamageValue;
 	AActor* DamageMaker = DamageData.DamageMaker;
@@ -52,6 +52,7 @@ void UHealthComponent::TakeDamage(FDamageData DamageData)
 	{
 		if (OnDie.IsBound())
 		{
+			DamageData.bTargetKilled = true;
 			OnDie.Broadcast(DamageMaker);
 		}
 	}

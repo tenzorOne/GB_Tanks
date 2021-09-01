@@ -29,7 +29,6 @@ protected:
  	void RotateToPlayer();
  	bool IsPlayerInRange();
  	bool CanFire();
- 	void Fire();
 	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UBoxComponent* HitCollider;

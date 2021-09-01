@@ -11,10 +11,9 @@
 #include "Camera/CameraComponent.h"
 #include "TankPlayerController.h"
 
-// Sets default values
+
 ATankPawn::ATankPawn()
-{
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+{	
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
@@ -29,7 +28,7 @@ ATankPawn::ATankPawn()
 
 }
 
-// Called when the game starts or when spawned
+
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
@@ -37,7 +36,6 @@ void ATankPawn::BeginPlay()
 	TankController = Cast<ATankPlayerController>(GetController());
 
 	FirstCannon = Cannon;
-	ActiveCannon = FirstCannon;
 	SetupAnotherCannon(SecondCannonClass, false);
 	
 	TempStopFactor = GetDefaultStopFactor();
@@ -46,7 +44,7 @@ void ATankPawn::BeginPlay()
 
 void ATankPawn::SetupAnotherCannon(TSubclassOf<ACannon> CannonClassToSetup, bool bPickupNewCannon)
 {
-	if (ActiveCannon)
+	if (Cannon)
 	{		
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.Owner = this;
@@ -58,14 +56,14 @@ void ATankPawn::SetupAnotherCannon(TSubclassOf<ACannon> CannonClassToSetup, bool
 
 		if (bPickupNewCannon)
 		{
-			ActiveCannon->Destroy();
-			if (ActiveCannon == FirstCannon)
+			Cannon->Destroy();
+			if (Cannon == FirstCannon)
 			{
-				ActiveCannon = FirstCannon = TempCannon;
+				Cannon = FirstCannon = TempCannon;
 			}
 			else
 			{
-				ActiveCannon = SecondCannon = TempCannon;
+				Cannon = SecondCannon = TempCannon;
 			}
 		}
 		else
@@ -78,28 +76,28 @@ void ATankPawn::SetupAnotherCannon(TSubclassOf<ACannon> CannonClassToSetup, bool
 
 void ATankPawn::SwitchCannon()
 {
-	if (ActiveCannon)
+	if (Cannon)
 	{
 		if (!bSwitchCannon)
 		{
-			ActiveCannon->SetActorHiddenInGame(true);
-			ActiveCannon->SetActorEnableCollision(false);
-			ActiveCannon->SetActorLocation({ 0.f, 0.f, 0.f });
-			ActiveCannon = SecondCannon;
-			ActiveCannon->SetActorHiddenInGame(false);
-			ActiveCannon->SetActorEnableCollision(true);
-			ActiveCannon->SetActorLocation(CannonSetupPoint->GetComponentLocation());
+			Cannon->SetActorHiddenInGame(true);
+			Cannon->SetActorEnableCollision(false);
+			Cannon->SetActorLocation({ 0.f, 0.f, 0.f });
+			Cannon = SecondCannon;
+			Cannon->SetActorHiddenInGame(false);
+			Cannon->SetActorEnableCollision(true);
+			Cannon->SetActorLocation(CannonSetupPoint->GetComponentLocation());
 			bSwitchCannon = true;
 		}
 		else
 		{
-			ActiveCannon->SetActorHiddenInGame(true);
-			ActiveCannon->SetActorEnableCollision(false);
-			ActiveCannon->SetActorLocation({ 0.f, 0.f, 0.f });
-			ActiveCannon = FirstCannon;
-			ActiveCannon->SetActorHiddenInGame(false);
-			ActiveCannon->SetActorEnableCollision(true);
-			ActiveCannon->SetActorLocation(CannonSetupPoint->GetComponentLocation());
+			Cannon->SetActorHiddenInGame(true);
+			Cannon->SetActorEnableCollision(false);
+			Cannon->SetActorLocation({ 0.f, 0.f, 0.f });
+			Cannon = FirstCannon;
+			Cannon->SetActorHiddenInGame(false);
+			Cannon->SetActorEnableCollision(true);
+			Cannon->SetActorLocation(CannonSetupPoint->GetComponentLocation());
 			bSwitchCannon = false;
 		}
 	}
@@ -117,30 +115,13 @@ void ATankPawn::Die(AActor* DamageMaker)
 
 }
 
-// Call the correct method based on the current Cannon type
-void ATankPawn::StartFire()
-{
-	if (ActiveCannon)
-	{
-		ActiveCannon->StartFire();
-	}
-}
-
-// Stop automatic fire based on Fire Action-input (IE_Released)
-void ATankPawn::StopFire()
-{
-	if (ActiveCannon)
-	{
-		ActiveCannon->StopFire();
-	}
-}
-
 void ATankPawn::FireSpecial()
 {
-	if (ActiveCannon)
+	if (Cannon)
 	{
-		ActiveCannon->FireSpecial();
+		Cannon->FireSpecial();
 	}
+
 }
 
 // Called every frame

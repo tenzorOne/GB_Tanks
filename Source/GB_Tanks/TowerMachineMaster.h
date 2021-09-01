@@ -6,23 +6,34 @@
 #include "GameFramework/Pawn.h"
 #include "Cannon.h"
 #include "DamageTaker.h"
+#include "IScorable.h"
 #include "TowerMachineMaster.generated.h"
 
 class UHealthComponent;
-class ATankPlayerController;
 class UStaticMeshCompinent;
-class UCameraComponent;
-class USpringArmComponent;
 class ACannon;
 
 UCLASS()
-class GB_TANKS_API ATowerMachineMaster : public APawn, public IDamageTaker
+class GB_TANKS_API ATowerMachineMaster : public APawn, public IDamageTaker, public IIScorable
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
 	ATowerMachineMaster();
+
+	UFUNCTION()
+		void SetupCannon(TSubclassOf<ACannon> CannonClassToSetup);
+	UFUNCTION()
+		ACannon* GetCurrentCannon() { return Cannon; };
+	UFUNCTION()
+		void StartFire();
+	UFUNCTION()
+		void StopFire();
+	UFUNCTION()
+		virtual void TakeDamage(FDamageData& DamageData) override;
+	UFUNCTION()
+		virtual void EarningPoints() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -52,12 +63,5 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void Die(AActor* DamageMaker);
-
-	UFUNCTION()
-		virtual void TakeDamage(FDamageData DamageData) override;
-	UFUNCTION()
-		virtual void EarningPoints(int32 Points) override;
-	UFUNCTION()
-		void SetupCannon(TSubclassOf<ACannon> CannonClassToSetup);
 
 };
