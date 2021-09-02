@@ -28,33 +28,36 @@ protected:
 		UArrowComponent* ProjectileSpawnPoint;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters", meta = (ClampMin = "0"))
 		int32 MaxAmmo = 4;
+	UPROPERTY(BlueprintReadOnly, Category = "Fire Parameters")
+		int32 CurrentAmmo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
 		float FireRate = 1.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
 		float FireRange = 1000.f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters", meta = (EditCondition = "CannonType != ECannonType::FireProjectile"))
 		float FireDamage = 1.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
 		ECannonType CannonType = ECannonType::FireProjectile;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters", meta = (EditCondition = "CannonType == ECannonType::FireProjectile"))
+		bool bAutomaticCannon = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
 		TSubclassOf<AProjectile> ProjectileClass;
 
 	FTimerHandle ReloadTimerHandle;
+	FDamageData DamageData;
 	bool bReadyToFire = true;
-	int32 CurrentAmmo;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	ECannonType GetCannonType() { return CannonType; };
-	void Fire();
-	void AutomaticFire();
-	void StopAutomaticFire();
+	void StartFire();
+	void StopFire();
 	void FireSpecial();
 	bool IsReadyToFire();
 	void AddAmmo(int32 AmmoToAdd);
 
 protected:
 	void Reload();
+	void TargetDestroyed();
 
 };

@@ -5,6 +5,7 @@
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "TimerManager.h"
+#include "DamageTaker.h"
 #include "Engine/World.h"
 
 // Sets default values
@@ -32,10 +33,27 @@ void AProjectile::Start()
 
 void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Projectile %s collided with %s. "), *GetName(), *OtherActor->GetName());
+	if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(OtherActor))
+	{
+		if (OtherActor != GetInstigator())
+		{
+			DamageData.DamageValue = Damage;
+			DamageData.DamageMaker = this;
+			DamageData.Instigator = GetInstigator();
+			DamageTaker->TakeDamage(DamageData);
+			
+			if (DamageData.bTargetKilled)
+			{
+				if (OnDestroyTarget.IsBound())
+				{
+					OnDestroyTarget.Broadcast();
+				}
+			}
+		}
+	}
 
-	OtherActor->Destroy();
 	Destroy();
+
 }
 
 void AProjectile::Move()

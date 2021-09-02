@@ -4,26 +4,17 @@
 #include "TankPawn.h"
 #include "Math/Vector.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "TankPlayerController.h"
 
-// Sets default values
+
 ATankPawn::ATankPawn()
-{
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+{	
 	PrimaryActorTick.bCanEverTick = true;
-
-	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tank Body"));
-	RootComponent = BodyMesh;
-
-	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tank Turret"));
-	TurretMesh->SetupAttachment(BodyMesh);
-
-	CannonSetupPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Cannon Setup Point"));
-	CannonSetupPoint->AttachToComponent(TurretMesh, FAttachmentTransformRules::KeepRelativeTransform);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArm->SetupAttachment(BodyMesh);
@@ -37,128 +28,98 @@ ATankPawn::ATankPawn()
 
 }
 
-// Called when the game starts or when spawned
+
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	TempStopFactor = GetDefaultStopFactor();
 	TankController = Cast<ATankPlayerController>(GetController());
-	SetupCannon(MainCannon, MainCannonClass);
-	SetupCannon(SecondCannon, SecondCannonClass);
-}
 
-// Spawn and setup cannon on tank
-void ATankPawn::SetupCannon(ACannon* InCurrentCannon, TSubclassOf<ACannon> InCannonClass)
-{
-	if (InCurrentCannon)
-	{
-		InCurrentCannon->Destroy();
-	}
-
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.Instigator = this;
-	SpawnParameters.Owner = this;
-	InCurrentCannon = GetWorld()->SpawnActor<ACannon>(InCannonClass, SpawnParameters);
-	if (bIsMainCannon)
-	{
-		MainCannon = InCurrentCannon;
-		InCurrentCannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		CurrentCannon = InCurrentCannon;
-		bIsMainCannon = false;
-	}
-	else
-	{
-		SecondCannon = InCurrentCannon;
-		InCurrentCannon->SetActorHiddenInGame(true);
-		InCurrentCannon->SetActorLocation({ 0.f, 0.f, 0.f });
-		bIsMainCannon = true;
-	}
+	FirstCannon = Cannon;
+	SetupAnotherCannon(SecondCannonClass, false);
+	
+	TempStopFactor = GetDefaultStopFactor();
 
 }
 
-void ATankPawn::InstallNewCannon(TSubclassOf<ACannon> InCannonClass)
+void ATankPawn::SetupAnotherCannon(TSubclassOf<ACannon> CannonClassToSetup, bool bPickupNewCannon)
 {
-	if (CurrentCannon)
-	{
-		CurrentCannon->Destroy();
-	}
+	if (Cannon)
+	{		
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = this;
 
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.Instigator = this;
-	SpawnParameters.Owner = this;
-	CurrentCannon = GetWorld()->SpawnActor<ACannon>(InCannonClass, SpawnParameters);
-	if (bIsMainCannon)
-	{
-		MainCannon = CurrentCannon;
-	}
-	else
-	{
-		SecondCannon = CurrentCannon;
-	}
+		ACannon* TempCannon = GetWorld()->SpawnActor<ACannon>(CannonClassToSetup, SpawnParameters);
+		TempCannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		TempCannon->SetActorHiddenInGame(!bPickupNewCannon ? true : false);
+		TempCannon->SetActorEnableCollision(!bPickupNewCannon ? false : true);
 
-	CurrentCannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-}
-
-void ATankPawn::ChangeWeapon()
-{
-	if (CurrentCannon)
-	{
-		if (bIsMainCannon)
+		if (bPickupNewCannon)
 		{
-			CurrentCannon->SetActorHiddenInGame(true);
-			CurrentCannon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			CurrentCannon->SetActorLocation({ 0.f, 0.f, 0.f });
-			CurrentCannon = SecondCannon;
-			CurrentCannon->SetActorHiddenInGame(false);
-			CurrentCannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-			bIsMainCannon = false;
+			Cannon->Destroy();
+			if (Cannon == FirstCannon)
+			{
+				Cannon = FirstCannon = TempCannon;
+			}
+			else
+			{
+				Cannon = SecondCannon = TempCannon;
+			}
 		}
 		else
 		{
-			CurrentCannon->SetActorHiddenInGame(true);
-			CurrentCannon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			CurrentCannon->SetActorLocation({ 0.f, 0.f, 0.f });
-			CurrentCannon = MainCannon;
-			CurrentCannon->SetActorHiddenInGame(false);
-			CurrentCannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-			bIsMainCannon = true;
+			SecondCannon = TempCannon;
 		}
 	}
+
 }
 
-// Call the correct method based on the current Cannon type
-void ATankPawn::Fire()
+void ATankPawn::SwitchCannon()
 {
-	if (CurrentCannon)
+	if (Cannon)
 	{
-		if (CurrentCannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
+		if (!bSwitchCannon)
 		{
-			CurrentCannon->AutomaticFire();
+			Cannon->SetActorHiddenInGame(true);
+			Cannon->SetActorEnableCollision(false);
+			Cannon->SetActorLocation({ 0.f, 0.f, 0.f });
+			Cannon = SecondCannon;
+			Cannon->SetActorHiddenInGame(false);
+			Cannon->SetActorEnableCollision(true);
+			Cannon->SetActorLocation(CannonSetupPoint->GetComponentLocation());
+			bSwitchCannon = true;
 		}
 		else
 		{
-			CurrentCannon->Fire();
+			Cannon->SetActorHiddenInGame(true);
+			Cannon->SetActorEnableCollision(false);
+			Cannon->SetActorLocation({ 0.f, 0.f, 0.f });
+			Cannon = FirstCannon;
+			Cannon->SetActorHiddenInGame(false);
+			Cannon->SetActorEnableCollision(true);
+			Cannon->SetActorLocation(CannonSetupPoint->GetComponentLocation());
+			bSwitchCannon = false;
 		}
+	}
+	else
+	{
+		return;
 	}
 
 }
 
-// Stop automatic fire based on Fire Action-input (IE_Released)
-void ATankPawn::StopAutomaticFire()
+void ATankPawn::Die(AActor* DamageMaker)
 {
-	if (CurrentCannon && CurrentCannon->GetCannonType() == ECannonType::FireAutomaticProjectile)
-	{
-		CurrentCannon->StopAutomaticFire();
-	}
+	Destroy();
+	UKismetSystemLibrary::QuitGame(GetWorld(), TankController, EQuitPreference::Quit, false);
 
 }
 
 void ATankPawn::FireSpecial()
 {
-	if (CurrentCannon)
+	if (Cannon)
 	{
-		CurrentCannon->FireSpecial();
+		Cannon->FireSpecial();
 	}
 
 }

@@ -33,8 +33,8 @@ protected:
 	void MoveForward(float AxisValue);
 	void RotateRight(float AxisValue);
 	void Fire();
-	void StopAutomaticFire();
+	void StopFire();
 	void FireSpecial();
-	void ChangeWeapon();
+	void SwitchCannon();
 
 };
