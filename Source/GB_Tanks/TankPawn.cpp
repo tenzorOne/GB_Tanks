@@ -2,6 +2,8 @@
 
 
 #include "TankPawn.h"
+#include "TankPlayerController.h"
+#include "TankAIController.h"
 #include "Math/Vector.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -9,7 +11,6 @@
 #include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-#include "TankPlayerController.h"
 
 
 ATankPawn::ATankPawn()
@@ -34,11 +35,18 @@ void ATankPawn::BeginPlay()
 	Super::BeginPlay();
 	
 	TankController = Cast<ATankPlayerController>(GetController());
+	TankAIController = Cast<ATankAIController>(GetController());
 
 	FirstCannon = Cannon;
 	SetupAnotherCannon(SecondCannonClass, false);
 	
 	TempStopFactor = GetDefaultStopFactor();
+
+}
+
+FVector ATankPawn::GetViewPosition()
+{
+	return CannonSetupPoint->GetComponentLocation();
 
 }
 
@@ -133,57 +141,94 @@ void ATankPawn::Tick(float DeltaTime)
 	FVector CurrentLocation = GetActorLocation();
 	FVector PreviousLocation = PreviousLocation == CurrentLocation ? PreviousLocation : CurrentLocation;
 	FVector ForwardVector = GetActorForwardVector();
-	if (TargetForwardAxisValue == 0)
+	FVector MovePosition;
+	
+	if (TankController)
 	{
-		MovementInterp = MovementSmoothnes = FMath::FInterpTo(MovementSmoothnes, 0.f, DeltaTime, 6.f);
+		if (TargetForwardAxisValue == 0)
+		{
+			MovementInterp = MovementSmoothnes = FMath::FInterpTo(MovementSmoothnes, 0.f, DeltaTime, 6.f);
 
-		AddActorWorldOffset(UKismetMathLibrary::Multiply_VectorFloat(UKismetMathLibrary::Multiply_VectorFloat(ForwardVector, LastForwardAxisValue),
-			                FMath::FInterpConstantTo(StopInertiaFactor = FMath::Clamp(StopInertiaFactor - 0.01f, 0.f, StopInertiaFactor), 0.f, DeltaTime, MovementMomentum)), true);
+			AddActorWorldOffset(UKismetMathLibrary::Multiply_VectorFloat(UKismetMathLibrary::Multiply_VectorFloat(ForwardVector, LastForwardAxisValue),
+					FMath::FInterpConstantTo(StopInertiaFactor = FMath::Clamp(StopInertiaFactor - 0.01f, 0.f, StopInertiaFactor), 0.f, DeltaTime, MovementMomentum)), true);
+		}
+		else
+		{
+			StopInertiaFactor = FMath::FInterpTo(StopInertiaFactor, TempStopFactor, DeltaTime, StopFactorInterpSpeed);
+			LastForwardAxisValue = TankController->GetInputAxisValue("MoveForward");
+
+			MovePosition = FMath::VInterpTo(PreviousLocation, CurrentLocation + (ForwardVector * TargetForwardAxisValue) * MoveSpeed, DeltaTime,
+											MovementInterp = FMath::FInterpConstantTo(0.f, UKismetMathLibrary::SafeDivide(MoveSpeed, 100.f), DeltaTime,
+											MovementSmoothnes = FMath::Clamp(MovementSmoothnes + MovementMomentum, 0.f, UKismetMathLibrary::SafeDivide(MoveSpeed, 100.f))));
+
+			SetActorLocation(MovePosition, true);
+		}
 	}
-	else
+	else if (TankAIController)
 	{
-		StopInertiaFactor = FMath::FInterpTo(StopInertiaFactor, TempStopFactor, DeltaTime, StopFactorInterpSpeed);
-		LastForwardAxisValue = TankController->GetInputAxisValue("MoveForward");
-		FVector MovePosition = FMath::VInterpTo(PreviousLocation, CurrentLocation + (ForwardVector * TargetForwardAxisValue) * MoveSpeed, DeltaTime,
-							   MovementInterp = FMath::FInterpConstantTo(0.f, UKismetMathLibrary::SafeDivide(MoveSpeed, 100.f), DeltaTime,
-							   MovementSmoothnes = FMath::Clamp(MovementSmoothnes + MovementMomentum, 0.f, UKismetMathLibrary::SafeDivide(MoveSpeed, 100.f))));
-		SetActorLocation(MovePosition, true);
+		MovePosition = CurrentLocation + (ForwardVector * TargetForwardAxisValue) * MoveSpeed / 100;
+		SetActorLocation(MovePosition, false);
 	}
 	//
 
 	// Tank Rotation//
-	if (bUseBaseConstantRotationSmoothness)
+	if (TankController)
 	{
-		CurrentRightAxisValue = FMath::FInterpConstantTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
+		if (bUseBaseConstantRotationSmoothness)
+		{
+			CurrentRightAxisValue = FMath::FInterpConstantTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
+		}
+		else
+		{
+			CurrentRightAxisValue = FMath::FInterpTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
+		}
+
+		float YawRotation = CurrentRightAxisValue * RotationSpeed * DeltaTime;
+		YawRotation += GetActorRotation().Yaw;
+		SetActorRotation({ 0.f, YawRotation, 0.f });
 	}
-	else
+	else if (TankAIController)
 	{
-		CurrentRightAxisValue = FMath::FInterpTo(CurrentRightAxisValue, TargetRightAxisValue, DeltaTime, RotationSmoothness);
+		float YawRotation = TargetRightAxisValue * RotationSpeed * DeltaTime;
+		YawRotation += GetActorRotation().Yaw;
+		SetActorRotation({ 0.f, YawRotation, 0.f });
 	}
-	float YawRotation = RotationSpeed * CurrentRightAxisValue * DeltaTime;
-    YawRotation += GetActorRotation().Yaw;
-	SetActorRotation({ 0.f, YawRotation, 0.f });
 	//
 
 	// TurretRotation //
 	if (TankController)
 	{
 		FVector MousePos = TankController->GetMousePos();
-		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MousePos);
-		FRotator CurrRotation = TurretMesh->GetComponentRotation();
-		TargetRotation.Pitch = CurrRotation.Pitch;
-		TargetRotation.Roll = CurrRotation.Roll;
-		if (bUseTurretConstantRotationSmoothness)
-		{
-			TargetRotation = FMath::RInterpConstantTo(CurrRotation, TargetRotation, DeltaTime, TurretRotationSmoothness);
-		}
-		else
-		{
-			TargetRotation = FMath::RInterpTo(CurrRotation, TargetRotation, DeltaTime, TurretRotationSmoothness);
-		}
-		TurretMesh->SetWorldRotation(TargetRotation);
+		RotateTurretTo(MousePos);
 	}
 	//
+
+}
+
+FVector ATankPawn::GetTurretForwardVector()
+{
+	return TurretMesh->GetForwardVector();
+
+}
+
+void ATankPawn::RotateTurretTo(FVector TargetPosition)
+{
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetPosition);
+	FRotator CurrentRotation = TurretMesh->GetComponentRotation();
+	TargetRotation.Pitch = CurrentRotation.Pitch;
+	TargetRotation.Roll = CurrentRotation.Roll;
+	
+	if (bUseTurretConstantRotationSmoothness)
+	{
+		TargetRotation = FMath::RInterpConstantTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), TurretRotationSmoothness);
+		//TargetRotation = UKismetMathLibrary::RLerp(CurrRotation, TargetRotation, TurretRotationSmoothness, true);
+	}
+	else
+	{
+		TargetRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), TurretRotationSmoothness);
+		//TargetRotation = UKismetMathLibrary::RLerp(CurrRotation, TargetRotation, TurretRotationSmoothness, true);
+	}
+	TurretMesh->SetWorldRotation(TargetRotation);
 
 }
 

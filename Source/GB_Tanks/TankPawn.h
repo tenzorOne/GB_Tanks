@@ -12,6 +12,7 @@ class UStaticMeshCompinent;
 class UCameraComponent;
 class USpringArmComponent;
 class ATankPlayerController;
+class ATankAIController;
 class ACannon;
 
 UCLASS()
@@ -30,9 +31,17 @@ public:
 	UFUNCTION()
 		void SetupAnotherCannon(TSubclassOf<ACannon> CannonClassToSetup, bool bPickupNewCannon);
 	UFUNCTION()
+		FVector GetTurretForwardVector();
+	UFUNCTION()
+		void RotateTurretTo(FVector TargetPosition);
+	UFUNCTION()
 		void FireSpecial();
 	UFUNCTION()
 		void SwitchCannon();
+	UFUNCTION()
+		TArray<FVector> GetPatrollingPoints() { return PatrollingPoints; };
+	UFUNCTION()
+		float GetMovementAccuracy() { return MovementAccuracy; };
 	UFUNCTION()
 		float GetDefaultStopFactor() { TempStopFactor = StopInertiaFactor; return TempStopFactor; };
 	UFUNCTION()
@@ -67,6 +76,11 @@ protected:
 		bool bUseBaseConstantRotationSmoothness = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Turret|Rotation")
 		bool bUseTurretConstantRotationSmoothness = true;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement|Patrol Points", Meta = (MakeEditWidget = true))
+		TArray<FVector> PatrollingPoints;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement|Accuracy")
+		float MovementAccuracy = 50.f;
 
 	float MovementInterp = 0.f;
 	float MovementSmoothnes = 0.f;
@@ -80,6 +94,8 @@ protected:
 	UPROPERTY()
 		ATankPlayerController* TankController;
 	UPROPERTY()
+		ATankAIController* TankAIController;
+	UPROPERTY()
 		ACannon* FirstCannon;
 	UPROPERTY()
 		ACannon* SecondCannon;
@@ -90,5 +106,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	FVector GetViewPosition();
 
 };
