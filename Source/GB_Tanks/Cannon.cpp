@@ -11,6 +11,9 @@
 #include "DamageTaker.h"
 #include "IScorable.h"
 #include "Engine/Engine.h"
+#include "Components/AudioComponent.h"
+#include "GameFramework/ForceFeedbackEffect.h"
+#include "Particles/ParticleSystemComponent.h"
 
 
 ACannon::ACannon()
@@ -25,6 +28,14 @@ ACannon::ACannon()
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Spawn Point"));
 	ProjectileSpawnPoint->SetupAttachment(CannonMesh);
+
+	ShootEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Shoot Effect"));
+	ShootEffect->SetupAttachment(ProjectileSpawnPoint);
+	ShootEffect->bAutoActivate = false;
+
+	AudioEffect = CreateDefaultSubobject<UAudioComponent>(TEXT("Shoot Audio"));
+	AudioEffect->SetupAttachment(RootComponent);
+	AudioEffect->bAutoActivate = false;
 
 }
 
@@ -44,6 +55,11 @@ void ACannon::BeginPlay()
 
 	CurrentAmmo = MaxAmmo;
 
+	if (CannonType == ECannonType::FireProjectile && bAutomaticCannon)
+	{
+		bAutomaticFire = true;
+	}
+
 }
 
 // Cannon fire functional
@@ -58,17 +74,21 @@ void ACannon::StartFire()
 	{
 		if (CannonType == ECannonType::FireProjectile)
 		{
-			if (bAutomaticCannon)
+			bReadyToFire = false;
+			
+			ShootEffect->ActivateSystem();
+			AudioEffect->Play();
+
+			if (ShootShake && GetOwner() == GetWorld()->GetFirstPlayerController()->GetPawn())
 			{
-				bReadyToFire = true;
+				GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(ShootShake);
 			}
-			else
-			{
-				bReadyToFire = false;
-			}
-						
+
 			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
-			Projectile->OnDestroyTarget.AddUObject(this, &ACannon::TargetDestroyed);
+			if (Projectile)
+			{
+				Projectile->OnDestroyTarget.AddUObject(this, &ACannon::TargetDestroyed);
+			}
 			
 			if (Projectile)
 			{
@@ -77,14 +97,7 @@ void ACannon::StartFire()
 				--CurrentAmmo;
 			}
 
-			if (bAutomaticCannon)
-			{
-				GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::StartFire, 1.f / FireRate, false);;
-			}
-			else
-			{
-				GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
-			}
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
 		}
 		else
 		{
@@ -134,9 +147,10 @@ void ACannon::StartFire()
 
 void ACannon::StopFire()
 {
-	if (bAutomaticCannon)
+	if (CannonType == ECannonType::FireProjectile && bAutomaticCannon)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
+		bReadyToFire = true;
+		bAutomaticFire = true;
 	}
 
 }
@@ -173,6 +187,14 @@ void ACannon::AddAmmo(int32 AmmoToAdd)
 void ACannon::Reload()
 {
 	bReadyToFire = true;
+	if (CannonType == ECannonType::FireProjectile && bAutomaticCannon && bAutomaticFire)
+	{
+		StartFire();
+	}
+	else
+	{
+		StopFire();
+	}
 
 }
 

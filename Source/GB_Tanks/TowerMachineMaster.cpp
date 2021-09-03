@@ -70,7 +70,7 @@ void ATowerMachineMaster::StartFire()
 
 void ATowerMachineMaster::StopFire()
 {
-	Cannon->StopFire();
+	Cannon->bAutomaticFire = false;
 
 }
 

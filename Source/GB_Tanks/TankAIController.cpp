@@ -119,7 +119,7 @@ bool ATankAIController::IsPlayerSeen()
 	FHitResult hitResult;
 	FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("FireTrace")), true, this);
 	traceParams.bTraceComplex = true;
-	traceParams.AddIgnoredActor(TankPawn);
+	traceParams.AddIgnoredActor(this);
 	traceParams.bReturnPhysicalMaterial = false;
 
 	if (GetWorld()->LineTraceSingleByChannel(hitResult, eyesPos, playerPos, ECollisionChannel::ECC_Visibility, traceParams))
