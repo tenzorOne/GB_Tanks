@@ -12,6 +12,7 @@ class AProjectile;
 class UParticleSystemComponent;
 class UAudioComponent;
 class UMatineeCameraShake;
+class AAmmoBox;
 
 UCLASS()
 class GB_TANKS_API ACannon : public AActor
@@ -52,6 +53,8 @@ protected:
 		UParticleSystemComponent* ShootEffect;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UAudioComponent* AudioEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dynamic Spawn")
+		TSubclassOf<AAmmoBox> AmmoBoxForSpawn;
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UMatineeCameraShake> ShootShake;
 
@@ -62,6 +65,7 @@ protected:
 public:	
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	ECannonType GetCannonType() { return CannonType; };
+	TSubclassOf<AAmmoBox> GetAmmoBoxForSpawn() { return AmmoBoxForSpawn; };
 	void StartFire();
 	void StopFire();
 	void FireSpecial();

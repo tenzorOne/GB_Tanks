@@ -9,6 +9,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Engine/World.h"
 #include <Kismet/GameplayStatics.h>
+#include "AmmoBox.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -48,7 +49,11 @@ void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			if (DamageData.bTargetKilled)
 			{
 				if (OnDestroyTarget.IsBound())
-				{
+				{					
+					if (ACannon* MyOwner = Cast<ACannon>(GetOwner()))
+					{
+						GetWorld()->SpawnActor<AAmmoBox>(MyOwner->GetAmmoBoxForSpawn(), DamageData.HitLocation, FRotator(0.f));
+					}
 					OnDestroyTarget.Broadcast();
 				}
 			}

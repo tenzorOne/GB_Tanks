@@ -47,6 +47,10 @@ void ATurret::Targeting()
 	{
 		StartFire();
 	}
+	else
+	{
+		StopFire();
+	}
 	
 }
 

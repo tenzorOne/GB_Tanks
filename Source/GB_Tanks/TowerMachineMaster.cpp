@@ -93,6 +93,7 @@ void ATowerMachineMaster::RotateTurretTo(FVector TargetPosition)
 
 void ATowerMachineMaster::StartFire()
 {
+	Cannon->bAutomaticFire = true;
 	Cannon->StartFire();
 
 }

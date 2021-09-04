@@ -37,7 +37,10 @@ void ATankPawn::BeginPlay()
 	TankAIController = Cast<ATankAIController>(GetController());
 
 	FirstCannon = Cannon;
-	SetupAnotherCannon(SecondCannonClass, false);
+	if (TankController)
+	{
+		SetupAnotherCannon(SecondCannonClass, false);
+	}
 	
 	TempStopFactor = GetDefaultStopFactor();
 
@@ -111,7 +114,8 @@ void ATankPawn::SwitchCannon()
 
 void ATankPawn::Die(AActor* DamageMaker)
 {
-	Destroy();
+	Super::Destroy();
+
 	if (TankController)
 	{
 		UKismetSystemLibrary::QuitGame(GetWorld(), TankController, EQuitPreference::Quit, false);

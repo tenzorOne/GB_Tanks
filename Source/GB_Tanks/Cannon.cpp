@@ -14,6 +14,7 @@
 #include "Components/AudioComponent.h"
 #include "GameFramework/ForceFeedbackEffect.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "AmmoBox.h"
 
 
 ACannon::ACannon()
@@ -83,11 +84,8 @@ void ACannon::StartFire()
 			if (Projectile)
 			{
 				Projectile->OnDestroyTarget.AddUObject(this, &ACannon::TargetDestroyed);
-			}
-			
-			if (Projectile)
-			{
 				Projectile->SetInstigator(GetInstigator());
+				Projectile->SetOwner(this);
 				Projectile->Start();
 				--CurrentAmmo;
 			}
@@ -122,6 +120,7 @@ void ACannon::StartFire()
 						
 						if (DamageData.bTargetKilled)
 						{
+							GetWorld()->SpawnActor<AAmmoBox>(AmmoBoxForSpawn, DamageData.HitLocation, FRotator(0.f));
 							TargetDestroyed();
 						}
 					}
@@ -207,7 +206,7 @@ bool ACannon::IsReadyToFire()
 }
 
 void ACannon::TargetDestroyed()
-{	
+{		
 	if (IIScorable* ActorToEarningPoints = Cast<IIScorable>(GetOwner()))
 	{
 		ActorToEarningPoints->EarningPoints();

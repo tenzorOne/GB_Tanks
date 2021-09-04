@@ -91,6 +91,7 @@ void ATankAIController::Targeting()
 	}
 	else
 	{
+		TankPawn->StopFire();
 		RotateToPlayer();
 	}
 
