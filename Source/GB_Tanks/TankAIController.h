@@ -33,18 +33,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting")
 		float Accuracy = 10.f;
 
-	bool IsPlayerSeen();
-
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	
-	float GetRotatingValue();
+	float CalculateRotatingValue();
 	void Targeting();
 	void RotateToPlayer();
 	bool IsPlayerInRange();
+	bool DetectPlayerVisibility();
 	bool CanFire();
-	void Fire();
 
 public:
 	int32 CurrentPatrolPointIndex = INDEX_NONE;

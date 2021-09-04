@@ -79,11 +79,6 @@ void ACannon::StartFire()
 			ShootEffect->ActivateSystem();
 			AudioEffect->Play();
 
-			if (ShootShake && GetOwner() == GetWorld()->GetFirstPlayerController()->GetPawn())
-			{
-				GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(ShootShake);
-			}
-
 			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
 			if (Projectile)
 			{
@@ -102,6 +97,7 @@ void ACannon::StartFire()
 		else
 		{
 			bReadyToFire = false;
+			AudioEffect->Play();
 			--CurrentAmmo;
 
 			FHitResult HitResult;
@@ -119,6 +115,7 @@ void ACannon::StartFire()
 					if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(HitResult.Actor.Get()))
 					{
 						DamageData.DamageValue = FireDamage;
+						DamageData.HitLocation = HitResult.Location;
 						DamageData.DamageMaker = this;
 						DamageData.Instigator = GetInstigator();
 						DamageTaker->TakeDamage(DamageData);
@@ -140,6 +137,11 @@ void ACannon::StartFire()
 			}
 
 			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
+		}
+
+		if (ShootShake && GetOwner() == GetWorld()->GetFirstPlayerController()->GetPawn())
+		{
+			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(ShootShake);
 		}
 	}
 

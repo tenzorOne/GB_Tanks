@@ -7,6 +7,8 @@
 #include "TankPlayerController.h"
 #include "Projectile.h"
 #include "HealthComponent.h"
+#include "Particles/ParticleSystem.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 ATowerMachineMaster::ATowerMachineMaster()
@@ -44,6 +46,12 @@ void ATowerMachineMaster::Tick(float DeltaTime)
 
 }
 
+FVector ATowerMachineMaster::GetViewPosition()
+{
+	return CannonSetupPoint->GetComponentLocation();
+
+}
+
 // Called to bind functionality to input
 void ATowerMachineMaster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -62,6 +70,27 @@ void ATowerMachineMaster::SetupCannon(TSubclassOf<ACannon> CannonClassToSetup)
 
 }
 
+void ATowerMachineMaster::RotateTurretTo(FVector TargetPosition)
+{
+	FRotator CurrentRotation = TurretMesh->GetComponentRotation();
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), TargetPosition);
+	//TargetRotation.Pitch = CurrentRotation.Pitch;
+	TargetRotation.Roll = CurrentRotation.Roll;
+
+	if (bUseTurretConstantInterpRotation)
+	{
+		TargetRotation = FMath::RInterpConstantTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), TurretRotationSpeed);
+		//TargetRotation = UKismetMathLibrary::RLerp(CurrRotation, TargetRotation, TurretRotationSmoothness, true);
+	}
+	else
+	{
+		TargetRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), TurretRotationSpeed);
+		//TargetRotation = UKismetMathLibrary::RLerp(CurrRotation, TargetRotation, TurretRotationSmoothness, true);
+	}
+	TurretMesh->SetWorldRotation(TargetRotation);
+
+}
+
 void ATowerMachineMaster::StartFire()
 {
 	Cannon->StartFire();
@@ -76,6 +105,10 @@ void ATowerMachineMaster::StopFire()
 
 void ATowerMachineMaster::TakeDamage(FDamageData& DamageData)
 {
+	if (OnHitParticleEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnHitParticleEffect, DamageData.HitLocation, FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+	}
 	HealthComponent->TakeDamage(DamageData);
 
 }
@@ -88,6 +121,10 @@ void ATowerMachineMaster::EarningPoints()
 
 void ATowerMachineMaster::Die(AActor* DamageMaker)
 {
+	if (OnDeathParticleEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, GetActorLocation(), FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+	}
 	Destroy();
 
 }

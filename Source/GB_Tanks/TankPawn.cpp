@@ -5,7 +5,6 @@
 #include "TankPlayerController.h"
 #include "TankAIController.h"
 #include "Math/Vector.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
@@ -41,12 +40,6 @@ void ATankPawn::BeginPlay()
 	SetupAnotherCannon(SecondCannonClass, false);
 	
 	TempStopFactor = GetDefaultStopFactor();
-
-}
-
-FVector ATankPawn::GetViewPosition()
-{
-	return CannonSetupPoint->GetComponentLocation();
 
 }
 
@@ -119,7 +112,10 @@ void ATankPawn::SwitchCannon()
 void ATankPawn::Die(AActor* DamageMaker)
 {
 	Destroy();
-	UKismetSystemLibrary::QuitGame(GetWorld(), TankController, EQuitPreference::Quit, false);
+	if (TankController)
+	{
+		UKismetSystemLibrary::QuitGame(GetWorld(), TankController, EQuitPreference::Quit, false);
+	}
 
 }
 
@@ -208,27 +204,6 @@ void ATankPawn::Tick(float DeltaTime)
 FVector ATankPawn::GetTurretForwardVector()
 {
 	return TurretMesh->GetForwardVector();
-
-}
-
-void ATankPawn::RotateTurretTo(FVector TargetPosition)
-{
-	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetPosition);
-	FRotator CurrentRotation = TurretMesh->GetComponentRotation();
-	TargetRotation.Pitch = CurrentRotation.Pitch;
-	TargetRotation.Roll = CurrentRotation.Roll;
-	
-	if (bUseTurretConstantRotationSmoothness)
-	{
-		TargetRotation = FMath::RInterpConstantTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), TurretRotationSmoothness);
-		//TargetRotation = UKismetMathLibrary::RLerp(CurrRotation, TargetRotation, TurretRotationSmoothness, true);
-	}
-	else
-	{
-		TargetRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), TurretRotationSmoothness);
-		//TargetRotation = UKismetMathLibrary::RLerp(CurrRotation, TargetRotation, TurretRotationSmoothness, true);
-	}
-	TurretMesh->SetWorldRotation(TargetRotation);
 
 }
 

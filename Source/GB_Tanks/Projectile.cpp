@@ -6,7 +6,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "TimerManager.h"
 #include "DamageTaker.h"
+#include "Particles/ParticleSystem.h"
 #include "Engine/World.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 AProjectile::AProjectile()
@@ -38,6 +40,7 @@ void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 		if (OtherActor != GetInstigator())
 		{
 			DamageData.DamageValue = Damage;
+			DamageData.HitLocation = OverlappedComp->GetComponentLocation();
 			DamageData.DamageMaker = this;
 			DamageData.Instigator = GetInstigator();
 			DamageTaker->TakeDamage(DamageData);
@@ -51,7 +54,13 @@ void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			}
 		}
 	}
-
+	else
+	{
+		if (OnDeathParticleEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, OverlappedComp->GetComponentLocation(), FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+		}
+	}
 	Destroy();
 
 }

@@ -33,8 +33,6 @@ public:
 	UFUNCTION()
 		FVector GetTurretForwardVector();
 	UFUNCTION()
-		void RotateTurretTo(FVector TargetPosition);
-	UFUNCTION()
 		void FireSpecial();
 	UFUNCTION()
 		void SwitchCannon();
@@ -70,12 +68,8 @@ protected:
 		float RotationSpeed = 100.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float RotationSmoothness = 8.f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
-		float TurretRotationSmoothness = 8.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Movement|Speed")
 		bool bUseBaseConstantRotationSmoothness = true;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Turret|Rotation")
-		bool bUseTurretConstantRotationSmoothness = true;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement|Patrol Points", Meta = (MakeEditWidget = true))
 		TArray<FVector> PatrollingPoints;
@@ -106,7 +100,5 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	FVector GetViewPosition();
 
 };

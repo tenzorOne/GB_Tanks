@@ -3,8 +3,8 @@
 
 #include "Turret.h"
 #include "TankPlayerController.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ATurret::ATurret()
@@ -42,19 +42,17 @@ void ATurret::Targeting()
 	{
 		RotateToPlayer();
 	}
-
-	if (Cannon && Cannon->IsReadyToFire() && CanFire())
+	
+	if (CanFire() && IsPlayerInRange())
 	{
-		Cannon->StartFire();
+		StartFire();
 	}
-
+	
 }
 
 void ATurret::RotateToPlayer()
 {
-	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), PlayerPawn->GetActorLocation());
-	TargetRotation.Roll = TurretMesh->GetComponentRotation().Roll;
-	TurretMesh->SetWorldRotation(FMath::RInterpConstantTo(TurretMesh->GetComponentRotation(), TargetRotation, GetWorld()->GetDeltaSeconds(), TargetingSpeed));
+	RotateTurretTo(PlayerPawn->GetActorLocation());
 
 }
 
@@ -64,8 +62,39 @@ bool ATurret::IsPlayerInRange()
 
 }
 
+bool ATurret::DetectPlayerVisibility()
+{
+	FVector PlayerPosition = PlayerPawn->GetActorLocation();
+	FVector ViewPosition = GetViewPosition();
+
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("FireTrace")), true, this);
+	TraceParams.bTraceComplex = true;
+	TraceParams.AddIgnoredActor(this);
+	TraceParams.AddIgnoredActor(Cannon);
+	TraceParams.bReturnPhysicalMaterial = false;
+
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, ViewPosition, PlayerPosition, ECollisionChannel::ECC_Visibility, TraceParams))
+	{
+
+		if (HitResult.Actor.Get())
+		{
+			//DrawDebugLine(GetWorld(), ViewPosition, HitResult.Location, FColor::Cyan, false, 0.5f, 0, 10);
+			return HitResult.Actor.Get() == PlayerPawn;
+		}
+	}
+	//DrawDebugLine(GetWorld(), ViewPosition, PlayerPosition, FColor::Cyan, false, 0.5f, 0, 10);
+	return false;
+
+}
+
 bool ATurret::CanFire()
 {
+	if (!DetectPlayerVisibility())
+	{
+		return false;
+	}
+	
 	FVector TargetDirection = TurretMesh->GetForwardVector();
 	FVector DirectionToPlayer = PlayerPawn->GetActorLocation() - TurretMesh->GetComponentLocation();
 	DirectionToPlayer.Normalize();

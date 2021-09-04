@@ -39,14 +39,14 @@ void ATankAIController::Tick(float DeltaTime)
 	
 	TankPawn->MoveForward(1.f);
 
-	float RotationValue = GetRotatingValue();
+	float RotationValue = CalculateRotatingValue();
 	TankPawn->RotateRight(RotationValue);
 
 	Targeting();
 
 }
 
-float ATankAIController::GetRotatingValue()
+float ATankAIController::CalculateRotatingValue()
 {
 	FVector CurrentPoint = PatrollingPoints[CurrentPatrolPointIndex];
 	FVector PawnLocation = TankPawn->GetActorLocation();
@@ -87,7 +87,7 @@ void ATankAIController::Targeting()
 {
 	if (CanFire())
 	{
-		Fire();
+		TankPawn->StartFire();
 	}
 	else
 	{
@@ -111,7 +111,7 @@ bool ATankAIController::IsPlayerInRange()
 
 }
 
-bool ATankAIController::IsPlayerSeen()
+bool ATankAIController::DetectPlayerVisibility()
 {
 	FVector playerPos = PlayerPawn->GetActorLocation();
 	FVector eyesPos = TankPawn->GetViewPosition();
@@ -127,32 +127,30 @@ bool ATankAIController::IsPlayerSeen()
 
 		if (hitResult.Actor.Get())
 		{
-			DrawDebugLine(GetWorld(), eyesPos, hitResult.Location, FColor::Cyan, false, 0.5f, 0, 10);
+			//DrawDebugLine(GetWorld(), eyesPos, hitResult.Location, FColor::Cyan, false, 0.5f, 0, 10);
 			return hitResult.Actor.Get() == PlayerPawn;
 		}
 	}
-	DrawDebugLine(GetWorld(), eyesPos, playerPos, FColor::Cyan, false, 0.5f, 0, 10);
+	//DrawDebugLine(GetWorld(), eyesPos, playerPos, FColor::Cyan, false, 0.5f, 0, 10);
 	return false;
 
 }
 
 bool ATankAIController::CanFire()
 {
-	if (!IsPlayerSeen())
+	if (IsPlayerInRange())
 	{
-		return false;
+		if (!DetectPlayerVisibility())
+		{
+			return false;
+		}
 	}
 
 	FVector TargetingDirection = TankPawn->GetTurretForwardVector();
 	FVector DirectionToPlayer = PlayerPawn->GetActorLocation() - TankPawn->GetActorLocation();
 	DirectionToPlayer.Normalize();
 	float AimAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(TargetingDirection, DirectionToPlayer)));
+	
 	return AimAngle <= Accuracy;
-
-}
-
-void ATankAIController::Fire()
-{
-	TankPawn->StartFire();
 
 }
