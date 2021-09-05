@@ -20,13 +20,15 @@ protected:
 	UPROPERTY()
 		ATankPawn* TankPawn;
 	UPROPERTY()
-		FVector MousePos;
+		FVector MousePosition;
+	UPROPERTY()
+		FVector MouseDirection;
 
 public:
 	ATankPlayerController();
 	virtual void SetupInputComponent() override;
 	virtual void Tick(float DeltaTime) override;
-	FVector GetMousePos() { return MousePos; };
+	FVector GetMousePos() { return MousePosition; };
 
 protected:
 	virtual void BeginPlay() override;

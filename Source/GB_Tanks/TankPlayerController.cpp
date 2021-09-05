@@ -4,6 +4,7 @@
 #include "TankPlayerController.h"
 #include "DrawDebugHelpers.h"
 #include "TankPawn.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ATankPlayerController::ATankPlayerController()
 {
@@ -36,14 +37,14 @@ void ATankPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector MouseDirection;
-	DeprojectMousePositionToWorld(MousePos, MouseDirection);
-	FVector PawnPos = TankPawn->GetActorLocation();
-	MousePos.Z = PawnPos.Z;
-	FVector MouseDir = MousePos - PawnPos;
-	MouseDir.Normalize();
-	MousePos = PawnPos + MouseDir * 1000.f;
-	DrawDebugLine(GetWorld(), PawnPos, MousePos, FColor::Blue, false, 0.f, 0.f, 5.f);
+	FVector PawnPosition = TankPawn->GetActorLocation();
+	DeprojectMousePositionToWorld(MousePosition, MouseDirection);
+	float DistBetweenMouseAndPawn = UKismetMathLibrary::GetPointDistanceToLine(MousePosition, PawnPosition, MouseDirection);
+	MousePosition.Z = PawnPosition.Z;
+	FVector MousePositionToWorld = MousePosition - PawnPosition;
+	MousePositionToWorld.Normalize();
+	MousePosition = PawnPosition + MousePositionToWorld * DistBetweenMouseAndPawn;
+	//DrawDebugLine(GetWorld(), PawnPosition, MousePosition, FColor::Blue, false, 0.f, 0.f, 5.f);
 
 }
 

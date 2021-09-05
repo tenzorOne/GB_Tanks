@@ -11,6 +11,10 @@
 #include "DamageTaker.h"
 #include "IScorable.h"
 #include "Engine/Engine.h"
+#include "Components/AudioComponent.h"
+#include "GameFramework/ForceFeedbackEffect.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "AmmoBox.h"
 
 
 ACannon::ACannon()
@@ -25,6 +29,14 @@ ACannon::ACannon()
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("Spawn Point"));
 	ProjectileSpawnPoint->SetupAttachment(CannonMesh);
+
+	ShootEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Shoot Effect"));
+	ShootEffect->SetupAttachment(ProjectileSpawnPoint);
+	ShootEffect->bAutoActivate = false;
+
+	AudioEffect = CreateDefaultSubobject<UAudioComponent>(TEXT("Shoot Audio"));
+	AudioEffect->SetupAttachment(RootComponent);
+	AudioEffect->bAutoActivate = false;
 
 }
 
@@ -44,6 +56,11 @@ void ACannon::BeginPlay()
 
 	CurrentAmmo = MaxAmmo;
 
+	if (CannonType == ECannonType::FireProjectile && bAutomaticCannon)
+	{
+		bAutomaticFire = true;
+	}
+
 }
 
 // Cannon fire functional
@@ -58,37 +75,27 @@ void ACannon::StartFire()
 	{
 		if (CannonType == ECannonType::FireProjectile)
 		{
-			if (bAutomaticCannon)
-			{
-				bReadyToFire = true;
-			}
-			else
-			{
-				bReadyToFire = false;
-			}
-						
-			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
-			Projectile->OnDestroyTarget.AddUObject(this, &ACannon::TargetDestroyed);
+			bReadyToFire = false;
 			
+			ShootEffect->ActivateSystem();
+			AudioEffect->Play();
+
+			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
 			if (Projectile)
 			{
+				Projectile->OnDestroyTarget.AddUObject(this, &ACannon::TargetDestroyed);
 				Projectile->SetInstigator(GetInstigator());
+				Projectile->SetOwner(this);
 				Projectile->Start();
 				--CurrentAmmo;
 			}
 
-			if (bAutomaticCannon)
-			{
-				GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::StartFire, 1.f / FireRate, false);;
-			}
-			else
-			{
-				GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
-			}
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
 		}
 		else
 		{
 			bReadyToFire = false;
+			AudioEffect->Play();
 			--CurrentAmmo;
 
 			FHitResult HitResult;
@@ -106,12 +113,14 @@ void ACannon::StartFire()
 					if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(HitResult.Actor.Get()))
 					{
 						DamageData.DamageValue = FireDamage;
+						DamageData.HitLocation = HitResult.Location;
 						DamageData.DamageMaker = this;
 						DamageData.Instigator = GetInstigator();
 						DamageTaker->TakeDamage(DamageData);
 						
 						if (DamageData.bTargetKilled)
 						{
+							GetWorld()->SpawnActor<AAmmoBox>(AmmoBoxForSpawn, DamageData.HitLocation, FRotator(0.f));
 							TargetDestroyed();
 						}
 					}
@@ -128,15 +137,21 @@ void ACannon::StartFire()
 
 			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
 		}
+
+		if (ShootShake && GetOwner() == GetWorld()->GetFirstPlayerController()->GetPawn())
+		{
+			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(ShootShake);
+		}
 	}
 
 }
 
 void ACannon::StopFire()
 {
-	if (bAutomaticCannon)
+	if (CannonType == ECannonType::FireProjectile && bAutomaticCannon)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
+		bReadyToFire = true;
+		bAutomaticFire = true;
 	}
 
 }
@@ -173,6 +188,14 @@ void ACannon::AddAmmo(int32 AmmoToAdd)
 void ACannon::Reload()
 {
 	bReadyToFire = true;
+	if (CannonType == ECannonType::FireProjectile && bAutomaticCannon && bAutomaticFire)
+	{
+		StartFire();
+	}
+	else
+	{
+		StopFire();
+	}
 
 }
 
@@ -183,7 +206,7 @@ bool ACannon::IsReadyToFire()
 }
 
 void ACannon::TargetDestroyed()
-{	
+{		
 	if (IIScorable* ActorToEarningPoints = Cast<IIScorable>(GetOwner()))
 	{
 		ActorToEarningPoints->EarningPoints();

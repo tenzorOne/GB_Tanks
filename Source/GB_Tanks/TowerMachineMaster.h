@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Cannon.h"
 #include "DamageTaker.h"
 #include "IScorable.h"
@@ -12,6 +13,7 @@
 class UHealthComponent;
 class UStaticMeshCompinent;
 class ACannon;
+class UParticleSystem;
 
 UCLASS()
 class GB_TANKS_API ATowerMachineMaster : public APawn, public IDamageTaker, public IIScorable
@@ -26,6 +28,8 @@ public:
 		void SetupCannon(TSubclassOf<ACannon> CannonClassToSetup);
 	UFUNCTION()
 		ACannon* GetCurrentCannon() { return Cannon; };
+	UFUNCTION()
+		void RotateTurretTo(FVector TargetPosition);
 	UFUNCTION()
 		void StartFire();
 	UFUNCTION()
@@ -51,6 +55,14 @@ protected:
 		UHealthComponent* HealthComponent;
 	UPROPERTY(BlueprintReadOnly, Category = "Score Points")
 		int32 CurrentPoints = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
+		bool bUseTurretConstantInterpRotation = true;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
+		float TurretRotationSpeed = 20.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
+		UParticleSystem* OnHitParticleEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
+		UParticleSystem* OnDeathParticleEffect;
 
 	UPROPERTY()
 		ACannon* Cannon;
@@ -62,6 +74,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FVector GetViewPosition();
 	virtual void Die(AActor* DamageMaker);
 
 };

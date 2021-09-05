@@ -21,6 +21,8 @@ struct FDamageData
 	UPROPERTY()
 		float DamageValue;
 	UPROPERTY()
+		FVector HitLocation;
+	UPROPERTY()
 		AActor* Instigator;
 	UPROPERTY()
 		AActor* DamageMaker;

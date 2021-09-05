@@ -7,7 +7,6 @@
 #include "GameFramework/Actor.h"
 #include "AmmoBox.generated.h"
 
-
 UCLASS()
 class GB_TANKS_API AAmmoBox : public AActor
 {
@@ -21,6 +20,8 @@ protected:
 		TSubclassOf<ACannon> CannonClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo", meta = (EditCondition = "bOnlyAmmoBox", EditConditionHides))
 		int32 AmmoToAdd = 1;
+
+	const FString BPAmmoClassPath = "Blueprint'/Game/Tanks/Blueprints/BP_AmmoBox.BP_AmmoBox'";
 
 public:
 	AAmmoBox();

@@ -9,6 +9,10 @@
 
 class UArrowComponent;
 class AProjectile;
+class UParticleSystemComponent;
+class UAudioComponent;
+class UMatineeCameraShake;
+class AAmmoBox;
 
 UCLASS()
 class GB_TANKS_API ACannon : public AActor
@@ -19,9 +23,12 @@ public:
 	// Sets default values for this actor's properties
 	ACannon();
 
+	bool bAutomaticFire = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UStaticMeshComponent* CannonMesh;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
@@ -42,6 +49,14 @@ protected:
 		bool bAutomaticCannon = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire Parameters")
 		TSubclassOf<AProjectile> ProjectileClass;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		UParticleSystemComponent* ShootEffect;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		UAudioComponent* AudioEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dynamic Spawn")
+		TSubclassOf<AAmmoBox> AmmoBoxForSpawn;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<UMatineeCameraShake> ShootShake;
 
 	FTimerHandle ReloadTimerHandle;
 	FDamageData DamageData;
@@ -50,6 +65,7 @@ protected:
 public:	
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	ECannonType GetCannonType() { return CannonType; };
+	TSubclassOf<AAmmoBox> GetAmmoBoxForSpawn() { return AmmoBoxForSpawn; };
 	void StartFire();
 	void StopFire();
 	void FireSpecial();

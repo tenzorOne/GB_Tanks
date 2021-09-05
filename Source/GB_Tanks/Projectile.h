@@ -7,6 +7,8 @@
 #include "GameStructs.h"
 #include "Projectile.generated.h"
 
+class UParticleSystem;
+
 UCLASS()
 class GB_TANKS_API AProjectile : public AActor
 {
@@ -34,6 +36,8 @@ protected:
 		float FlyRange = 10000.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Damage")
 		float Damage = 1.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		UParticleSystem* OnDeathParticleEffect;
 
 	FTimerHandle MovementTimerHandle;
 	FDamageData DamageData;
