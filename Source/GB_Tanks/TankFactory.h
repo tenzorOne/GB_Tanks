@@ -12,6 +12,7 @@
 class UBoxComponent;
 class UHealthComponent;
 class AMapLoader;
+class UParticleSystem;
 
 UCLASS()
 class GB_TANKS_API ATankFactory : public AActor, public IDamageTaker
@@ -49,5 +50,11 @@ protected:
 		TArray<ATargetPoint*> TankWayPoints;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tank Spawn Parameters")
 		float SpawnTankRate = 1;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
+		UParticleSystem* OnTankSpawnParticleEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
+		UParticleSystem* OnHitParticleEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
+		UParticleSystem* OnDeathParticleEffect;
 
 };

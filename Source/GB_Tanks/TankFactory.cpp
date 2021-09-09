@@ -9,6 +9,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "HealthComponent.h"
 #include "MapLoader.h"
+#include "Particles/ParticleSystem.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 ATankFactory::ATankFactory()
@@ -54,6 +56,10 @@ void ATankFactory::SpawnNewTank()
 	ATankPawn* NewTank = GetWorld()->SpawnActorDeferred<ATankPawn>(SpawnTankClass, SpawnTransform, this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	if (NewTank)
 	{
+		if (OnTankSpawnParticleEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnTankSpawnParticleEffect, TankSpawnPoint->GetComponentLocation(), TankSpawnPoint->GetComponentRotation(), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+		}
 		NewTank->SetPatrollingPoints(TankWayPoints);
 		UGameplayStatics::FinishSpawningActor(NewTank, SpawnTransform);
 	}
@@ -62,6 +68,10 @@ void ATankFactory::SpawnNewTank()
 
 void ATankFactory::TakeDamage(FDamageData& DamageData)
 {
+	if (OnHitParticleEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnHitParticleEffect, DamageData.HitLocation, FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+	}
 	HealthComponent->TakeDamage(DamageData);
 
 }
@@ -71,6 +81,11 @@ void ATankFactory::Die()
 	if (LinkedMapLoader)
 	{
 		LinkedMapLoader->SetIsActivated(true);
+	}
+
+	if (OnDeathParticleEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, GetActorLocation(), FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
 	}
 	
 	Destroy();
