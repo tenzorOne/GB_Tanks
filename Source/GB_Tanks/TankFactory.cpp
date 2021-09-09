@@ -11,6 +11,7 @@
 #include "MapLoader.h"
 #include "Particles/ParticleSystem.h"
 #include <Kismet/GameplayStatics.h>
+#include <Engine/StaticMesh.h>
 
 // Sets default values
 ATankFactory::ATankFactory()
@@ -45,8 +46,8 @@ void ATankFactory::BeginPlay()
 		LinkedMapLoader->SetIsActivated(false);
 	}
 
-	FTimerHandle TargetingTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TargetingTimerHandle, this, &ATankFactory::SpawnNewTank, SpawnTankRate, true);
+	FTimerHandle TankSpawningTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TankSpawningTimerHandle, this, &ATankFactory::SpawnNewTank, SpawnTankRate, true, 0.1f);
 	
 }
 
@@ -58,7 +59,7 @@ void ATankFactory::SpawnNewTank()
 	{
 		if (OnTankSpawnParticleEffect)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnTankSpawnParticleEffect, TankSpawnPoint->GetComponentLocation(), TankSpawnPoint->GetComponentRotation(), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnTankSpawnParticleEffect, TankSpawnPoint->GetComponentLocation() + FVector(0.f, 0.f, 50.f), TankSpawnPoint->GetComponentRotation(), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
 		}
 		NewTank->SetPatrollingPoints(TankWayPoints);
 		UGameplayStatics::FinishSpawningActor(NewTank, SpawnTransform);
@@ -85,9 +86,17 @@ void ATankFactory::Die()
 
 	if (OnDeathParticleEffect)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, GetActorLocation(), FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, GetActorLocation(), FRotator(0.f), FVector(4.f), true, EPSCPoolMethod::AutoRelease, true);
 	}
 	
-	Destroy();
+	if (MeshOnDeath)
+	{
+		BuildingMesh->SetStaticMesh(MeshOnDeath);
+		HitCollider->DestroyComponent();
+		HealthComponent->Deactivate();
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
+
+	//Destroy();
 
 }

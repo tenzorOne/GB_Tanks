@@ -13,6 +13,7 @@ class UBoxComponent;
 class UHealthComponent;
 class AMapLoader;
 class UParticleSystem;
+class UStaticMesh;
 
 UCLASS()
 class GB_TANKS_API ATankFactory : public AActor, public IDamageTaker
@@ -54,6 +55,8 @@ protected:
 		UParticleSystem* OnTankSpawnParticleEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
 		UParticleSystem* OnHitParticleEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
+		UStaticMesh* MeshOnDeath;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Effects")
 		UParticleSystem* OnDeathParticleEffect;
 
