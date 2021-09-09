@@ -75,6 +75,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	FVector GetViewPosition();
-	virtual void Die(AActor* DamageMaker);
+	
+	virtual void Die();
 
 };

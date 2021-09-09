@@ -10,6 +10,7 @@
 #include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include <Engine/TargetPoint.h>
 
 
 ATankPawn::ATankPawn()
@@ -43,6 +44,24 @@ void ATankPawn::BeginPlay()
 	}
 	
 	TempStopFactor = GetDefaultStopFactor();
+
+}
+
+TArray<FVector> ATankPawn::GetPatrollingPoints()
+{
+	TArray<FVector> Points;
+	for (ATargetPoint* Point : PatrollingPoints)
+	{
+		Points.Add(Point->GetActorLocation());
+	}
+
+	return Points;
+
+}
+
+void ATankPawn::SetPatrollingPoints(TArray<ATargetPoint*> NewPatrollingPoints)
+{
+	PatrollingPoints = NewPatrollingPoints;
 
 }
 
@@ -112,7 +131,7 @@ void ATankPawn::SwitchCannon()
 
 }
 
-void ATankPawn::Die(AActor* DamageMaker)
+void ATankPawn::Die()
 {
 	Super::Destroy();
 

@@ -120,7 +120,7 @@ void ATowerMachineMaster::EarningPoints()
 
 }
 
-void ATowerMachineMaster::Die(AActor* DamageMaker)
+void ATowerMachineMaster::Die()
 {
 	if (OnDeathParticleEffect)
 	{

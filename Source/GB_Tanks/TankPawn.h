@@ -14,6 +14,7 @@ class USpringArmComponent;
 class ATankPlayerController;
 class ATankAIController;
 class ACannon;
+class ATargetPoint;
 
 UCLASS()
 class GB_TANKS_API ATankPawn : public ATowerMachineMaster
@@ -37,13 +38,14 @@ public:
 	UFUNCTION()
 		void SwitchCannon();
 	UFUNCTION()
-		TArray<FVector> GetPatrollingPoints() { return PatrollingPoints; };
-	UFUNCTION()
 		float GetMovementAccuracy() { return MovementAccuracy; };
 	UFUNCTION()
 		float GetDefaultStopFactor() { TempStopFactor = StopInertiaFactor; return TempStopFactor; };
 	UFUNCTION()
-		virtual void Die(AActor* DamageMaker) override;
+		virtual void Die() override;
+
+	TArray<FVector> GetPatrollingPoints();
+	void SetPatrollingPoints(TArray<ATargetPoint*> NewPatrollingPoints);
 
 protected:
 	// Called when the game starts or when spawned
@@ -71,8 +73,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Use Constant Rotation Smoothness", Category = "Movement|Speed")
 		bool bUseBaseConstantRotationSmoothness = true;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement|Patrol Points", Meta = (MakeEditWidget = true))
-		TArray<FVector> PatrollingPoints;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement|Patrol Points")
+		TArray<ATargetPoint*> PatrollingPoints;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement|Accuracy")
 		float MovementAccuracy = 50.f;
 
