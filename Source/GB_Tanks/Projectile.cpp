@@ -61,6 +61,17 @@ void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	}
 	else
 	{
+		UPrimitiveComponent* PhysicsMesh = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
+		if (PhysicsMesh)
+		{
+			if (PhysicsMesh->IsSimulatingPhysics())
+			{
+				FVector ForceVector = OtherActor->GetActorLocation() - GetActorLocation();
+				ForceVector.Normalize();
+				PhysicsMesh->AddImpulseAtLocation(ForceVector * PushForce, SweepResult.ImpactPoint);
+			}
+		}
+
 		if (OnDeathParticleEffect)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, OverlappedComp->GetComponentLocation(), FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);

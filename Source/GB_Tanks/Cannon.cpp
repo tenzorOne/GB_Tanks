@@ -42,7 +42,7 @@ ACannon::ACannon()
 
 void ACannon::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+	//Super::PostEditChangeProperty(PropertyChangedEvent);
 	
 	if (CannonType != ECannonType::FireProjectile)
 	{

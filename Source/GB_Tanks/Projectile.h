@@ -22,7 +22,7 @@ public:
 
 	FOnDestroyTarget OnDestroyTarget;
 
-	void Start();
+	virtual void Start();
 
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
@@ -36,6 +36,8 @@ protected:
 		float FlyRange = 10000.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Damage")
 		float Damage = 1.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Damage")
+		float PushForce = 1000.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UParticleSystem* OnDeathParticleEffect;
 
@@ -46,6 +48,6 @@ protected:
 	UFUNCTION()
 		void OnMeshOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
-		void Move();
+		virtual void Move();
 
 };

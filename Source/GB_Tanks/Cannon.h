@@ -63,7 +63,7 @@ protected:
 	bool bReadyToFire = true;
 
 public:	
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent);
 	ECannonType GetCannonType() { return CannonType; };
 	TSubclassOf<AAmmoBox> GetAmmoBoxForSpawn() { return AmmoBoxForSpawn; };
 	void StartFire();
