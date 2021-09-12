@@ -8,6 +8,7 @@
 #include "Projectile.generated.h"
 
 class UParticleSystem;
+class IDamageTaker;
 
 UCLASS()
 class GB_TANKS_API AProjectile : public AActor
@@ -55,5 +56,8 @@ protected:
 		virtual void Move();
 	UFUNCTION()
 		void Explode();
+		
+	void DamageActor(IDamageTaker* DamageTakerActor);
+	void PushActor(UPrimitiveComponent* Component, FVector PushLocation, float InPushForce);
 
 };

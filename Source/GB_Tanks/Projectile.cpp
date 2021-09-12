@@ -44,38 +44,13 @@ void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	{
 		if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(OtherActor))
 		{
-			if (OtherActor != GetInstigator())
-			{
-				DamageData.DamageValue = Damage;
-				DamageData.HitLocation = OverlappedComp->GetComponentLocation();
-				DamageData.DamageMaker = this;
-				DamageData.Instigator = GetInstigator();
-				DamageTaker->TakeDamage(DamageData);
-
-				if (DamageData.bTargetKilled)
-				{
-					if (OnDestroyTarget.IsBound())
-					{
-						if (ACannon* MyOwner = Cast<ACannon>(GetOwner()))
-						{
-							GetWorld()->SpawnActor<AAmmoBox>(MyOwner->GetAmmoBoxForSpawn(), DamageData.HitLocation, FRotator(0.f));
-						}
-						OnDestroyTarget.Broadcast();
-					}
-				}
-			}
+			DamageActor(DamageTaker);
 		}
 		else
 		{
-			UPrimitiveComponent* PhysicsMesh = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
-			if (PhysicsMesh)
+			if (UPrimitiveComponent* PhysicsMesh = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent()))
 			{
-				if (PhysicsMesh->IsSimulatingPhysics())
-				{
-					FVector ForceVector = OtherActor->GetActorLocation() - GetActorLocation();
-					ForceVector.Normalize();
-					PhysicsMesh->AddImpulseAtLocation(ForceVector * PushForce, SweepResult.ImpactPoint);
-				}
+				PushActor(PhysicsMesh, SweepResult.ImpactPoint, PushForce);
 			}
 
 			if (OnDeathParticleEffect)
@@ -84,6 +59,42 @@ void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			}
 		}
 		Destroy();
+	}
+
+}
+
+void AProjectile::DamageActor(IDamageTaker* DamageTakerActor)
+{
+	if (Cast<APawn>(DamageTakerActor) != GetInstigator())
+	{
+		DamageData.DamageValue = Damage;
+		DamageData.HitLocation = RootComponent->GetComponentLocation();
+		DamageData.DamageMaker = this;
+		DamageData.Instigator = GetInstigator();
+		DamageTakerActor->TakeDamage(DamageData);
+
+		if (DamageData.bTargetKilled)
+		{
+			if (OnDestroyTarget.IsBound())
+			{
+				if (ACannon* MyOwner = Cast<ACannon>(GetOwner()))
+				{
+					GetWorld()->SpawnActor<AAmmoBox>(MyOwner->GetAmmoBoxForSpawn(), DamageData.HitLocation, FRotator(0.f));
+				}
+				OnDestroyTarget.Broadcast();
+			}
+		}
+	}
+
+}
+
+void AProjectile::PushActor(UPrimitiveComponent* Component, FVector PushLocation, float InPushForce)
+{
+	if (Component->IsSimulatingPhysics())
+	{
+		FVector ForceVector = Component->GetComponentLocation() - GetActorLocation();
+		ForceVector.Normalize();
+		Component->AddImpulseAtLocation(ForceVector * InPushForce, PushLocation);
 	}
 
 }
@@ -132,26 +143,15 @@ void AProjectile::Explode()
 				continue;
 			}
 
-			IDamageTaker* DamageTaker = Cast<IDamageTaker>(OtherActor);
-			if (DamageTaker)
+			if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(OtherActor))
 			{
-				DamageData.DamageValue = Damage;
-				DamageData.HitLocation = RootComponent->GetComponentLocation();
-				DamageData.DamageMaker = this;
-				DamageData.Instigator = GetInstigator();
-				DamageTaker->TakeDamage(DamageData);
+				DamageActor(DamageTaker);
 			}
 			else
 			{
-				UPrimitiveComponent* PhysicsMesh = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
-				if (PhysicsMesh)
+				if (UPrimitiveComponent* PhysicsMesh = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent()))
 				{
-					if (PhysicsMesh->IsSimulatingPhysics())
-					{
-						FVector ForceVector = OtherActor->GetActorLocation() - GetActorLocation();
-						ForceVector.Normalize();
-						PhysicsMesh->AddImpulseAtLocation(ForceVector * PushForce, DamageData.HitLocation);
-					}
+					PushActor(PhysicsMesh, HitResult.ImpactPoint, PushForce);
 				}
 			}
 		}
