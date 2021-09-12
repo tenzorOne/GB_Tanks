@@ -43,85 +43,14 @@ void APhysicsProjectile::Move()
 	if (FVector::Distance(NewLocation, CurrentTrajectory[TragectoryPointIndex]) <= MoveAccurency)
 	{
 		TragectoryPointIndex++;
-		if (TragectoryPointIndex >= CurrentTrajectory.Num() - 2)
+		if (TragectoryPointIndex >= CurrentTrajectory.Num())
 		{
-			Explode();
-			if (OnDeathParticleEffect)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, GetActorLocation(), FRotator(0.f), FVector(3.f), true, EPSCPoolMethod::AutoRelease, true);
-			}
 			Destroy();
 		}
 		else
 		{
 			FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTrajectory[TragectoryPointIndex]);
 			SetActorRotation(NewRotation);
-		}
-	}
-
-}
-
-void APhysicsProjectile::Explode()
-{
-	FVector StartPos = GetActorLocation();
-	FVector EndPos = StartPos + FVector(0.1f);
-
-	FCollisionShape Shape = FCollisionShape::MakeSphere(ExplodeRadius);
-	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
-	Params.AddIgnoredActor(this);
-	Params.bTraceComplex = true;
-	Params.TraceTag = "Explode Trace";
-	TArray<FHitResult> AttackHit;
-
-	FQuat Rotation = FQuat::Identity;
-
-	bool SweepResult = GetWorld()->SweepMultiByChannel
-	(
-		AttackHit,
-		StartPos,
-		EndPos,
-		Rotation,
-		ECollisionChannel::ECC_Visibility,
-		Shape,
-		Params
-	);
-
-	//GetWorld()->DebugDrawTraceTag = "Explode Trace";
-
-	if (SweepResult)
-	{
-		for (FHitResult HitResult : AttackHit)
-		{
-			AActor* OtherActor = HitResult.GetActor();
-			if (!OtherActor)
-			{
-				continue;
-			}
-
-			IDamageTaker* DamageTakerActor = Cast<IDamageTaker>(OtherActor);
-			if (DamageTakerActor)
-			{
-				DamageData.DamageValue = Damage;
-				DamageData.HitLocation = HitResult.Location;
-				DamageData.Instigator = GetOwner();
-				DamageData.DamageMaker = this;
-
-				DamageTakerActor->TakeDamage(DamageData);
-			}
-			else
-			{
-				UPrimitiveComponent* PhysicsMesh = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
-				if (PhysicsMesh)
-				{
-					if (PhysicsMesh->IsSimulatingPhysics())
-					{
-						FVector ForceVector = OtherActor->GetActorLocation() - GetActorLocation();
-						ForceVector.Normalize();
-						PhysicsMesh->AddImpulse(ForceVector * PushForce, NAME_None, true);
-					}
-				}
-			}
-
 		}
 	}
 

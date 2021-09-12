@@ -35,6 +35,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Movement")
 		float FlyRange = 10000.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Damage")
+		bool bExplosiveProjectile = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Damage", meta = (EditCondition = "bExplosiveProjectile", EditConditionHides))
+		float ExplodeRadius = 200.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Damage")
 		float Damage = 1.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Damage")
 		float PushForce = 1000.f;
@@ -49,5 +53,7 @@ protected:
 		void OnMeshOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		virtual void Move();
+	UFUNCTION()
+		void Explode();
 
 };
