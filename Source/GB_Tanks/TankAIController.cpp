@@ -20,10 +20,14 @@ void ATankAIController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (!TankPawn)
+	{
 		Initialize();
+	}
 
 	if (!TankPawn)
+	{
 		return;
+	}
 
 	if (CurrentPatrolPointIndex == INDEX_NONE)
 	{
@@ -129,44 +133,40 @@ bool ATankAIController::IsPlayerInRange()
 
 bool ATankAIController::DetectPlayerVisibility()
 {
-	FVector playerPos = PlayerPawn->GetActorLocation();
-	FVector eyesPos = TankPawn->GetViewPosition();
+	FVector PlayerPos = PlayerPawn->GetActorLocation();
+	FVector EyesPos = TankPawn->GetViewPosition();
 
-	FHitResult hitResult;
-	FCollisionQueryParams traceParams = FCollisionQueryParams(FName(TEXT("FireTrace")), true, this);
-	traceParams.bTraceComplex = true;
-	traceParams.AddIgnoredActor(this);
-	traceParams.bReturnPhysicalMaterial = false;
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("FireTrace")), true, this);
+	TraceParams.bTraceComplex = true;
+	TraceParams.AddIgnoredActor(this);
+	TraceParams.bReturnPhysicalMaterial = false;
 
-	if (GetWorld()->LineTraceSingleByChannel(hitResult, eyesPos, playerPos, ECollisionChannel::ECC_Visibility, traceParams))
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, EyesPos, PlayerPos, ECollisionChannel::ECC_Visibility, TraceParams))
 	{
-
-		if (hitResult.Actor.Get())
+		if (HitResult.Actor.Get())
 		{
-			//DrawDebugLine(GetWorld(), eyesPos, hitResult.Location, FColor::Cyan, false, 0.5f, 0, 10);
-			return hitResult.Actor.Get() == PlayerPawn;
+			return HitResult.Actor.Get() == PlayerPawn;
 		}
 	}
-	//DrawDebugLine(GetWorld(), eyesPos, playerPos, FColor::Cyan, false, 0.5f, 0, 10);
 	return false;
 
 }
 
 bool ATankAIController::CanFire()
 {
-	if (IsPlayerInRange())
+	if (IsPlayerInRange() && DetectPlayerVisibility())
 	{
-		if (!DetectPlayerVisibility())
-		{
-			return false;
-		}
-	}
+		FVector TargetingDirection = TankPawn->GetTurretForwardVector();
+		FVector DirectionToPlayer = PlayerPawn->GetActorLocation() - TankPawn->GetActorLocation();
+		DirectionToPlayer.Normalize();
+		float AimAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(TargetingDirection, DirectionToPlayer)));
 
-	FVector TargetingDirection = TankPawn->GetTurretForwardVector();
-	FVector DirectionToPlayer = PlayerPawn->GetActorLocation() - TankPawn->GetActorLocation();
-	DirectionToPlayer.Normalize();
-	float AimAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(TargetingDirection, DirectionToPlayer)));
-	
-	return AimAngle <= Accuracy;
+		return AimAngle <= Accuracy;
+	}
+	else
+	{
+		return false;
+	}
 
 }

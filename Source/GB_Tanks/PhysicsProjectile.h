@@ -22,23 +22,19 @@ protected:
 		UPhysicalTrajectoryComponent* PhysicsComponent;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UParticleSystemComponent* TrailEffect;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Trajectory")
 		float MoveAccurency = 10.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Trajectory")
-		float TrajectorySimulationMaxTime = 50.f;
+		float SimStep = 10.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Trajectory")
-		float TrajectorySimulationTimeStep = 1.f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Trajectory")
-		float TrajectorySimulationSpeed = 20.f;
+		float MaxSimTime = 20.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Trajectory")
 		bool bShowTrajectory = false;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Movement Parameters")
-		FVector MoveVector;
-	UPROPERTY(BlueprintReadWrite, Category = "Movement Parameters")
 		TArray<FVector> CurrentTrajectory;
 	UPROPERTY(BlueprintReadWrite, Category = "Movement Parameters")
-		int32 TragectoryPointIndex;
+		int32 TrajectoryPointIndex;
 
 public:
 	APhysicsProjectile();

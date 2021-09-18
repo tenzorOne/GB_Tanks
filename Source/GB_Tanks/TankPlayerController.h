@@ -36,7 +36,6 @@ protected:
 	void RotateRight(float AxisValue);
 	void Fire();
 	void StopFire();
-	void FireSpecial();
 	void SwitchCannon();
 
 };

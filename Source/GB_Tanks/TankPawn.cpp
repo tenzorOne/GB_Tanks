@@ -142,15 +142,6 @@ void ATankPawn::Die()
 
 }
 
-void ATankPawn::FireSpecial()
-{
-	if (Cannon)
-	{
-		Cannon->FireSpecial();
-	}
-
-}
-
 // Called every frame
 void ATankPawn::Tick(float DeltaTime)
 {

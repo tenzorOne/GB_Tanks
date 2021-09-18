@@ -68,7 +68,6 @@ public:
 	TSubclassOf<AAmmoBox> GetAmmoBoxForSpawn() { return AmmoBoxForSpawn; };
 	void StartFire();
 	void StopFire();
-	void FireSpecial();
 	bool IsReadyToFire();
 	void AddAmmo(int32 AmmoToAdd);
 

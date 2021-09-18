@@ -19,37 +19,32 @@ APhysicsProjectile::APhysicsProjectile()
 
 void APhysicsProjectile::Start()
 {
-	MoveVector = GetActorForwardVector() * TrajectorySimulationSpeed;
-	CurrentTrajectory = PhysicsComponent->GenerateTrajectory(GetActorLocation(), MoveVector, TrajectorySimulationMaxTime, TrajectorySimulationTimeStep, 0);
-	if (bShowTrajectory)
+	if (PhysicsComponent->SuggestVeloctiy())
 	{
-		for (FVector Position : CurrentTrajectory)
-		{
-			DrawDebugSphere(GetWorld(), Position, 5, 8, FColor::Purple, true, 1, 0, 2);
-		}
-	}
+		CurrentTrajectory = PhysicsComponent->GenerateTrajectory(SimStep, MaxSimTime, bShowTrajectory);
+		TrajectoryPointIndex = 0;
 
-	TragectoryPointIndex = 0;
-	Super::Start();
+		Super::Start();
+	}
 
 }
 
 void APhysicsProjectile::Move()
 {
-	FVector CurrentMoveVector = CurrentTrajectory[TragectoryPointIndex] - GetActorLocation();
+	FVector CurrentMoveVector = CurrentTrajectory[TrajectoryPointIndex] - GetActorLocation();
 	CurrentMoveVector.Normalize();
 	FVector NewLocation = GetActorLocation() + CurrentMoveVector * MoveSpeed * MoveRate;
 	SetActorLocation(NewLocation);
-	if (FVector::Distance(NewLocation, CurrentTrajectory[TragectoryPointIndex]) <= MoveAccurency)
+	if (FVector::Distance(NewLocation, CurrentTrajectory[TrajectoryPointIndex]) <= MoveAccurency)
 	{
-		TragectoryPointIndex++;
-		if (TragectoryPointIndex >= CurrentTrajectory.Num())
+		TrajectoryPointIndex++;
+		if (TrajectoryPointIndex >= CurrentTrajectory.Num())
 		{
 			Destroy();
 		}
 		else
 		{
-			FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTrajectory[TragectoryPointIndex]);
+			FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTrajectory[TrajectoryPointIndex]);
 			SetActorRotation(NewRotation);
 		}
 	}

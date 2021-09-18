@@ -56,6 +56,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Score Points")
 		int32 CurrentPoints = 0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
+		bool bRotationByCannonPosition = true;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
 		bool bUseTurretConstantInterpRotation = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
 		float TurretRotationSpeed = 20.f;

@@ -17,10 +17,12 @@ public:
 	UPhysicalTrajectoryComponent();
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gravity Parameters")
-		float Gravity = -9.8f;
+	UPROPERTY(BlueprintReadOnly, Category = "Velocity Parameters")
+		FVector OutVelocity;
+	
 
-public:	
-	TArray<FVector> GenerateTrajectory(FVector StartPos, FVector Velocity, float MaxTime, float TimeStep, float MinZValue = 0.f);
+public:		
+	bool SuggestVeloctiy();
+	TArray<FVector> GenerateTrajectory(float& SimStep, float& MaxSimTime, bool& ShowTrajectory);
 
 };

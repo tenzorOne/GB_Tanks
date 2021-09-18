@@ -72,9 +72,20 @@ void ATowerMachineMaster::SetupCannon(TSubclassOf<ACannon> CannonClassToSetup)
 
 void ATowerMachineMaster::RotateTurretTo(FVector TargetPosition)
 {
-	FRotator CurrentRotation = TurretMesh->GetComponentRotation();
-	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), TargetPosition);
-	//TargetRotation.Pitch = CurrentRotation.Pitch;
+	FRotator CurrentRotation;
+	FRotator TargetRotation;
+
+	if (bRotationByCannonPosition)
+	{
+		CurrentRotation = CannonSetupPoint->GetComponentRotation();
+		TargetRotation = UKismetMathLibrary::FindLookAtRotation(CannonSetupPoint->GetComponentLocation(), TargetPosition);
+	}
+	else
+	{
+		CurrentRotation = TurretMesh->GetComponentRotation();
+		TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), TargetPosition);
+	}
+	
 	TargetRotation.Roll = CurrentRotation.Roll;
 
 	if (bUseTurretConstantInterpRotation)

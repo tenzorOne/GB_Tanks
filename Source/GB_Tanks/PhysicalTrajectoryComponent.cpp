@@ -2,6 +2,7 @@
 
 
 #include "PhysicalTrajectoryComponent.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values for this component's properties
 UPhysicalTrajectoryComponent::UPhysicalTrajectoryComponent()
@@ -13,22 +14,22 @@ UPhysicalTrajectoryComponent::UPhysicalTrajectoryComponent()
 	// ...
 }
 
-TArray<FVector> UPhysicalTrajectoryComponent::GenerateTrajectory(FVector StartPos, FVector Velocity, float MaxTime, float TimeStep, float MinZValue /*= 0.f*/)
+bool UPhysicalTrajectoryComponent::SuggestVeloctiy()
 {
-	TArray<FVector> Trajectory;
-	FVector GravityVector(0, 0, Gravity);
+	return UGameplayStatics::SuggestProjectileVelocity_CustomArc(GetWorld(), OutVelocity, GetOwner()->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
 
-	for (float Time = 0; Time < MaxTime; Time = Time + TimeStep)
-	{
-		FVector Position = StartPos + Velocity * Time + GravityVector * Time * Time / 2;
-		if (Position.Z <= MinZValue)
-		{
-			break;
-		}
+}
 
-		Trajectory.Add(Position);
-	}
+TArray<FVector> UPhysicalTrajectoryComponent::GenerateTrajectory(float& SimStep, float& MaxSimTime, bool& ShowTrajectory)
+{
+	FHitResult HitResult;
+	TArray<FVector> PathPositions;
+	FVector LastTraceDirection;
 
-	return Trajectory;
+	UGameplayStatics::Blueprint_PredictProjectilePath_ByTraceChannel(GetWorld(), HitResult, PathPositions, LastTraceDirection, GetOwner()->GetActorLocation(),
+																	OutVelocity, false, 5.f, ECollisionChannel::ECC_EngineTraceChannel1, true,
+																	TArray<AActor*> { GetOwner() }, ShowTrajectory == true ? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None, 5.f, SimStep, MaxSimTime);
+
+	return PathPositions;
 
 }
