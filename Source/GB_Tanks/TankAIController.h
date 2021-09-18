@@ -22,7 +22,7 @@ protected:
 		ATankPawn* TankPawn;
 	UPROPERTY()
 		APawn* PlayerPawn;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement|Patrol Points", Meta = (MakeEditWidget = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement|Patrol Points")
 		TArray<FVector> PatrollingPoints;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement|Accuracy")
 		float MovementAccuracy;
@@ -37,6 +37,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	
+	void Initialize();
 	float CalculateRotatingValue();
 	void Targeting();
 	void RotateToPlayer();

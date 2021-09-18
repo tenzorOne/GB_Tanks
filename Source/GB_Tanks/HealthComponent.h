@@ -13,7 +13,7 @@ class GB_TANKS_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	DECLARE_EVENT_OneParam(UHealthComponent, FOnDie, AActor*)
+	DECLARE_EVENT(UHealthComponent, FOnDie)
 
 public:	
 	// Sets default values for this component's properties
