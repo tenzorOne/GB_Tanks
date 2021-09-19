@@ -127,7 +127,14 @@ void ATankAIController::RotateToPlayer()
 
 bool ATankAIController::IsPlayerInRange()
 {
-	return FVector::Distance(TankPawn->GetActorLocation(), PlayerPawn->GetActorLocation()) <= TargetingRange;
+	if (PlayerPawn)
+	{
+		return FVector::Distance(TankPawn->GetActorLocation(), PlayerPawn->GetActorLocation()) <= TargetingRange;
+	}
+	else
+	{
+		return false;
+	}
 
 }
 

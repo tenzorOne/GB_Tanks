@@ -26,8 +26,8 @@ public:
 
 	UFUNCTION()
 		void SetupCannon(TSubclassOf<ACannon> CannonClassToSetup);
-	UFUNCTION()
-		ACannon* GetCurrentCannon() { return Cannon; };
+	UFUNCTION(BlueprintCallable)
+		ACannon* GetCurrentCannon() { return Cannon != nullptr ? Cannon : nullptr; };
 	UFUNCTION()
 		void RotateTurretTo(FVector TargetPosition);
 	UFUNCTION()

@@ -9,6 +9,7 @@
 #include "HealthComponent.h"
 #include "Particles/ParticleSystem.h"
 #include <Kismet/GameplayStatics.h>
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ATowerMachineMaster::ATowerMachineMaster()
@@ -71,7 +72,7 @@ void ATowerMachineMaster::SetupCannon(TSubclassOf<ACannon> CannonClassToSetup)
 }
 
 void ATowerMachineMaster::RotateTurretTo(FVector TargetPosition)
-{
+{	
 	FRotator CurrentRotation;
 	FRotator TargetRotation;
 
@@ -99,6 +100,11 @@ void ATowerMachineMaster::RotateTurretTo(FVector TargetPosition)
 		//TargetRotation = UKismetMathLibrary::RLerp(CurrRotation, TargetRotation, TurretRotationSmoothness, true);
 	}
 	TurretMesh->SetWorldRotation(TargetRotation);
+
+	if (this == GetWorld()->GetFirstPlayerController()->GetPawn())
+	{
+		DrawDebugLine(GetWorld(), CannonSetupPoint->GetComponentLocation(), TargetPosition, FColor::Blue, false, -1.f, 0, 10.f);
+	}
 
 }
 

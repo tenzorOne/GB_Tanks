@@ -28,6 +28,8 @@ public:
 	ATankPlayerController();
 	virtual void SetupInputComponent() override;
 	virtual void Tick(float DeltaTime) override;
+	
+	UFUNCTION(BlueprintCallable)
 	FVector GetMousePos() { return MousePosition; };
 
 protected:
