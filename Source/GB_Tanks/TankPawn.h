@@ -34,8 +34,6 @@ public:
 	UFUNCTION()
 		FVector GetTurretForwardVector();
 	UFUNCTION()
-		void FireSpecial();
-	UFUNCTION()
 		void SwitchCannon();
 	UFUNCTION()
 		float GetMovementAccuracy() { return MovementAccuracy; };

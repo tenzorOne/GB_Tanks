@@ -36,37 +36,66 @@ void AProjectile::Start()
 
 void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(OtherActor))
+	if (bExplosiveProjectile)
 	{
-		if (OtherActor != GetInstigator())
-		{
-			DamageData.DamageValue = Damage;
-			DamageData.HitLocation = OverlappedComp->GetComponentLocation();
-			DamageData.DamageMaker = this;
-			DamageData.Instigator = GetInstigator();
-			DamageTaker->TakeDamage(DamageData);
-			
-			if (DamageData.bTargetKilled)
-			{
-				if (OnDestroyTarget.IsBound())
-				{					
-					if (ACannon* MyOwner = Cast<ACannon>(GetOwner()))
-					{
-						GetWorld()->SpawnActor<AAmmoBox>(MyOwner->GetAmmoBoxForSpawn(), DamageData.HitLocation, FRotator(0.f));
-					}
-					OnDestroyTarget.Broadcast();
-				}
-			}
-		}
+		Explode();
 	}
 	else
 	{
-		if (OnDeathParticleEffect)
+		if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(OtherActor))
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, OverlappedComp->GetComponentLocation(), FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+			DamageActor(DamageTaker);
+		}
+		else
+		{
+			if (UPrimitiveComponent* PhysicsMesh = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent()))
+			{
+				PushActor(PhysicsMesh, SweepResult.ImpactPoint, PushForce);
+			}
+
+			if (OnDeathParticleEffect)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, OverlappedComp->GetComponentLocation(), FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+			}
+		}
+		Destroy();
+	}
+
+}
+
+void AProjectile::DamageActor(IDamageTaker* DamageTakerActor)
+{
+	if (Cast<APawn>(DamageTakerActor) != GetInstigator())
+	{
+		DamageData.DamageValue = Damage;
+		DamageData.HitLocation = RootComponent->GetComponentLocation();
+		DamageData.DamageMaker = this;
+		DamageData.Instigator = GetInstigator();
+		DamageTakerActor->TakeDamage(DamageData);
+
+		if (DamageData.bTargetKilled)
+		{
+			if (OnDestroyTarget.IsBound())
+			{
+				if (ACannon* MyOwner = Cast<ACannon>(GetOwner()))
+				{
+					GetWorld()->SpawnActor<AAmmoBox>(MyOwner->GetAmmoBoxForSpawn(), DamageData.HitLocation, FRotator(0.f));
+				}
+				OnDestroyTarget.Broadcast();
+			}
 		}
 	}
-	Destroy();
+
+}
+
+void AProjectile::PushActor(UPrimitiveComponent* Component, FVector PushLocation, float InPushForce)
+{
+	if (Component->IsSimulatingPhysics())
+	{
+		FVector ForceVector = Component->GetComponentLocation() - GetActorLocation();
+		ForceVector.Normalize();
+		Component->AddImpulseAtLocation(ForceVector * InPushForce, PushLocation);
+	}
 
 }
 
@@ -74,5 +103,65 @@ void AProjectile::Move()
 {
 	FVector NextPosition = GetActorLocation() + GetActorForwardVector() * MoveSpeed * MoveRate;
 	SetActorLocation(NextPosition);
+
+}
+
+void AProjectile::Explode()
+{
+	FVector StartPos = GetActorLocation();
+	FVector EndPos = StartPos + FVector(0.1f);
+
+	FCollisionShape Shape = FCollisionShape::MakeSphere(ExplodeRadius);
+	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
+	Params.AddIgnoredActor(this);
+	Params.bTraceComplex = true;
+	Params.TraceTag = "Explode Trace";
+	TArray<FHitResult> AttackHit;
+
+	FQuat Rotation = FQuat::Identity;
+
+	bool SweepResult = GetWorld()->SweepMultiByChannel
+	(
+		AttackHit,
+		StartPos,
+		EndPos,
+		Rotation,
+		ECollisionChannel::ECC_Visibility,
+		Shape,
+		Params
+	);
+
+	//GetWorld()->DebugDrawTraceTag = "Explode Trace";
+
+	if (SweepResult)
+	{
+		for (FHitResult HitResult : AttackHit)
+		{
+			AActor* OtherActor = HitResult.GetActor();
+			if (!OtherActor)
+			{
+				continue;
+			}
+
+			if (IDamageTaker* DamageTaker = Cast<IDamageTaker>(OtherActor))
+			{
+				DamageActor(DamageTaker);
+			}
+			else
+			{
+				if (UPrimitiveComponent* PhysicsMesh = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent()))
+				{
+					PushActor(PhysicsMesh, HitResult.ImpactPoint, PushForce);
+				}
+			}
+		}
+		
+		if (OnDeathParticleEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnDeathParticleEffect, RootComponent->GetComponentLocation(), FRotator(0.f), FVector(ExplodeRadius / 100.f), true, EPSCPoolMethod::AutoRelease, true);
+		}
+	}
+
+	Destroy();
 
 }

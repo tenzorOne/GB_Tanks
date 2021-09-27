@@ -133,21 +133,10 @@ void ATankPawn::SwitchCannon()
 
 void ATankPawn::Die()
 {
-	Super::Destroy();
+	Cannon->Destroy();
+	Cannon = FirstCannon = nullptr;
 
-	if (TankController)
-	{
-		UKismetSystemLibrary::QuitGame(GetWorld(), TankController, EQuitPreference::Quit, false);
-	}
-
-}
-
-void ATankPawn::FireSpecial()
-{
-	if (Cannon)
-	{
-		Cannon->FireSpecial();
-	}
+	Super::Die();
 
 }
 

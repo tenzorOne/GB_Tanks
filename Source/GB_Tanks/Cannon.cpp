@@ -42,7 +42,7 @@ ACannon::ACannon()
 
 void ACannon::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+	//Super::PostEditChangeProperty(PropertyChangedEvent);
 	
 	if (CannonType != ECannonType::FireProjectile)
 	{
@@ -122,6 +122,7 @@ void ACannon::StartFire()
 						{
 							GetWorld()->SpawnActor<AAmmoBox>(AmmoBoxForSpawn, DamageData.HitLocation, FRotator(0.f));
 							TargetDestroyed();
+							DamageData.bTargetKilled = false;
 						}
 					}
 					else
@@ -152,28 +153,6 @@ void ACannon::StopFire()
 	{
 		bReadyToFire = true;
 		bAutomaticFire = true;
-	}
-
-}
-
-// Special cannon fire functional (on RMB)
-void ACannon::FireSpecial()
-{
-	if (CurrentAmmo == 0)
-	{
-		return;
-	}
-	
-	if (bReadyToFire)
-	{
-		bReadyToFire = false;
-
-		--CurrentAmmo;
-		
-		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, FString("Ammo: ") + FString::FromInt(CurrentAmmo) + FString("/") + FString::FromInt(MaxAmmo));
-		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Emerald, "SPECIAL FIRE");
-		
-		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 1 / FireRate, false);
 	}
 
 }

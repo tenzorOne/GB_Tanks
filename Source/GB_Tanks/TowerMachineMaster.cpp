@@ -9,6 +9,7 @@
 #include "HealthComponent.h"
 #include "Particles/ParticleSystem.h"
 #include <Kismet/GameplayStatics.h>
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ATowerMachineMaster::ATowerMachineMaster()
@@ -71,10 +72,21 @@ void ATowerMachineMaster::SetupCannon(TSubclassOf<ACannon> CannonClassToSetup)
 }
 
 void ATowerMachineMaster::RotateTurretTo(FVector TargetPosition)
-{
-	FRotator CurrentRotation = TurretMesh->GetComponentRotation();
-	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), TargetPosition);
-	//TargetRotation.Pitch = CurrentRotation.Pitch;
+{	
+	FRotator CurrentRotation;
+	FRotator TargetRotation;
+
+	if (bRotationByCannonPosition)
+	{
+		CurrentRotation = CannonSetupPoint->GetComponentRotation();
+		TargetRotation = UKismetMathLibrary::FindLookAtRotation(CannonSetupPoint->GetComponentLocation(), TargetPosition);
+	}
+	else
+	{
+		CurrentRotation = TurretMesh->GetComponentRotation();
+		TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), TargetPosition);
+	}
+	
 	TargetRotation.Roll = CurrentRotation.Roll;
 
 	if (bUseTurretConstantInterpRotation)
@@ -88,6 +100,11 @@ void ATowerMachineMaster::RotateTurretTo(FVector TargetPosition)
 		//TargetRotation = UKismetMathLibrary::RLerp(CurrRotation, TargetRotation, TurretRotationSmoothness, true);
 	}
 	TurretMesh->SetWorldRotation(TargetRotation);
+
+	if (this == GetWorld()->GetFirstPlayerController()->GetPawn())
+	{
+		DrawDebugLine(GetWorld(), CannonSetupPoint->GetComponentLocation(), TargetPosition, FColor::Blue, false, -1.f, 0, 10.f);
+	}
 
 }
 

@@ -26,8 +26,8 @@ public:
 
 	UFUNCTION()
 		void SetupCannon(TSubclassOf<ACannon> CannonClassToSetup);
-	UFUNCTION()
-		ACannon* GetCurrentCannon() { return Cannon; };
+	UFUNCTION(BlueprintCallable)
+		ACannon* GetCurrentCannon() { return Cannon != nullptr ? Cannon : nullptr; };
 	UFUNCTION()
 		void RotateTurretTo(FVector TargetPosition);
 	UFUNCTION()
@@ -55,6 +55,8 @@ protected:
 		UHealthComponent* HealthComponent;
 	UPROPERTY(BlueprintReadOnly, Category = "Score Points")
 		int32 CurrentPoints = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
+		bool bRotationByCannonPosition = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
 		bool bUseTurretConstantInterpRotation = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Rotation")
