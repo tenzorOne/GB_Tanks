@@ -11,6 +11,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include <Engine/TargetPoint.h>
+#include <Components/WidgetComponent.h>
 
 
 ATankPawn::ATankPawn()
@@ -26,6 +27,11 @@ ATankPawn::ATankPawn()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	WorldWidget = CreateDefaultSubobject<UWidgetComponent>("HPBar");
+	WorldWidget->SetWidgetClass(UWidgetComponent::StaticClass());
+	WorldWidget->SetupAttachment(RootComponent);
+	WorldWidget->SetUsingAbsoluteRotation(true);
 
 }
 

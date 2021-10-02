@@ -15,6 +15,7 @@ class ATankPlayerController;
 class ATankAIController;
 class ACannon;
 class ATargetPoint;
+class UWidgetComponent;
 
 UCLASS()
 class GB_TANKS_API ATankPawn : public ATowerMachineMaster
@@ -55,6 +56,8 @@ protected:
 		UCameraComponent* Camera;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon", meta = (DisplayPriority = "2"))
 		TSubclassOf<ACannon> SecondCannonClass = CannonClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		UWidgetComponent* WorldWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float MoveSpeed = 100.f;

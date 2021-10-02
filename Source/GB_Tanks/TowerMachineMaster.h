@@ -15,6 +15,8 @@ class UStaticMeshCompinent;
 class ACannon;
 class UParticleSystem;
 
+DECLARE_DELEGATE(FTakeDamage)
+
 UCLASS()
 class GB_TANKS_API ATowerMachineMaster : public APawn, public IDamageTaker, public IIScorable
 {
@@ -34,6 +36,8 @@ public:
 		void StartFire();
 	UFUNCTION()
 		void StopFire();
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Take Damage"))
+		void EventTakeDamage();
 	UFUNCTION()
 		virtual void TakeDamage(FDamageData& DamageData) override;
 	UFUNCTION()
@@ -68,6 +72,8 @@ protected:
 
 	UPROPERTY()
 		ACannon* Cannon;
+
+	FTakeDamage TakeDamageDelegate;
 
 public:	
 	// Called every frame
