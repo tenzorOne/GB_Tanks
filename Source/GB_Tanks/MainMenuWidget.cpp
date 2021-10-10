@@ -5,6 +5,7 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include <TimerManager.h>
 #include "Blueprint/WidgetTree.h"
+#include "SMiniMap.h"
 
 // привязываем нажатие кнопок к функциям
 
@@ -30,6 +31,11 @@ void UMainMenuWidget::NativeConstruct()
 	}
 
 	CurrentButtonType = PreviousButtonType = EButtonType::BU_Uncertain;
+
+	if (CanvasHolder)
+	{
+		CanvasHolder->SetContent(SNew(SMiniMap));
+	}
 
 }
 

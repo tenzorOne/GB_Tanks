@@ -10,6 +10,7 @@
 #include <Components/VerticalBox.h>
 #include <Components/Image.h>
 #include <Animation/WidgetAnimation.h>
+#include <Components/NativeWidgetHost.h>
 #include "MainMenuWidget.generated.h"
 
 UENUM()
@@ -74,6 +75,8 @@ protected:
 		UWidgetAnimation* SwitcherAnimation;
 	UPROPERTY(Transient, meta = (BindWidgetAnim))
 		UWidgetAnimation* AuthorsTextTranslation;
+	UPROPERTY(meta = (BindWidgetOptional))
+		UNativeWidgetHost* CanvasHolder;
 
 protected:
 	EButtonType CurrentButtonType;
