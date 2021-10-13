@@ -22,6 +22,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "RadioButtons|Event")
 	FOnRadioButtonChangedEvent OnRadioButtonChanged;
+	UPROPERTY(EditAnywhere, Category = "Appearance", meta = (DisplayName = "Style"))
+	FRadioButtonsStyle WidgetStyle;
 
 protected:
 	TSharedRef<SWidget> RebuildWidget() override;

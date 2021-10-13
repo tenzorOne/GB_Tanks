@@ -7,6 +7,100 @@
 #include "Blueprint/WidgetTree.h"
 #include "SMiniMap.h"
 
+// гигантский пре-констракт, потому что € хотел и дальше пробовать себ€ в синтаксисе и принципах работы с UMG/Slate
+// да, € знаю, что мог создать все виджеты текста в хэдере и пометить их метой, как BindWidget
+// да, € знаю, что мог создать один стиль (как это было с RadioButtons) и применить его на однотипные виджеты
+// здесь € просто попробовал иной подход (оп€ть же, дл€ практики):
+//
+//
+// ” мен€ есть ENum ColorScheme, которое хранит несколько подготовленных цветовых схем (Red, Green, Blue - все они позвол€ют примен€ть разную схему в моей шаблонной функции ChangeElementColorAndOpacity() через FStyleSet::Get())
+// этот ENum € могу переключать в редакторе, что сразу же отразитс€ на цветовой схеме всех виджетов, которые € как-то препарирую здесь, в пре-констракте
+// сам метод состоит из множества кастов, range-based циклов и вложений, но суть проста несмотр€ на всю громоздкость:
+// так как € не прив€зываю виджеты в ѕлюсах, € перебираю множество детей в иерархии UMG-виджета, котора€ есть у виджета в редакторе и по ней уже выставл€ю всем элементам текста/картинкам нужный цвет от текущей цветовой схемы
+
+void UMainMenuWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+
+	UTextBlock* StartTextBlock = Cast<UTextBlock>(StartGameButton->GetChildAt(0));
+	ChangeElementColorAndOpacity(StartTextBlock, false);
+	UTextBlock* OptionsTextBlock = Cast<UTextBlock>(OptionsButton->GetChildAt(0));
+	ChangeElementColorAndOpacity(OptionsTextBlock, false);
+	UTextBlock* AuthorsTextBlock = Cast<UTextBlock>(AuthorsButton->GetChildAt(0));
+	ChangeElementColorAndOpacity(AuthorsTextBlock, false);
+	UTextBlock* ExitTextBlock = Cast<UTextBlock>(ExitButton->GetChildAt(0));
+	ChangeElementColorAndOpacity(ExitTextBlock, false);
+
+	ChangeElementColorAndOpacity(Background, false);
+
+	TArray<UWidget*> TempChildrenArray = LevelButtonsGroup->GetAllChildren();
+	for (UWidget* CurrentChild : TempChildrenArray)
+	{
+		if (CurrentChild->GetClass() == UTextBlock::StaticClass())
+		{
+			CurrentChild = Cast<UTextBlock>(CurrentChild);
+			ChangeElementColorAndOpacity(CurrentChild, true);
+		}
+
+		if (UButton* TempButton = Cast<UButton>(CurrentChild))
+		{
+			UTextBlock* TempTextBlock = Cast<UTextBlock>(TempButton->GetChildAt(0));
+			ChangeElementColorAndOpacity(TempTextBlock, true);
+		}
+	}
+
+	TempChildrenArray.Empty();
+
+	if (UOverlay* SwitcherChild = Cast<UOverlay>(MenuWidgetSwitcher->GetChildAt(1)))
+	{
+		TempChildrenArray = SwitcherChild->GetAllChildren();
+		for (UWidget* CurrentChild : TempChildrenArray)
+		{
+			if (UTextBlock* TempTextBlock = Cast<UTextBlock>(CurrentChild))
+			{
+				ChangeElementColorAndOpacity(TempTextBlock, true);
+			}
+
+			if (UVerticalBox* TempVerticalBox = Cast<UVerticalBox>(CurrentChild))
+			{
+				for (int i = 0; i < TempVerticalBox->GetChildrenCount(); ++i)
+				{
+					if (UHorizontalBox* TempHorizontalBox = Cast<UHorizontalBox>(TempVerticalBox->GetChildAt(i)))
+					{
+						if (UTextBlock* TempTextBlock = Cast<UTextBlock>(TempHorizontalBox->GetChildAt(0)))
+						{
+							ChangeElementColorAndOpacity(TempTextBlock, true);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	TempChildrenArray.Empty();
+
+	if (UOverlay* SwitcherChild = Cast<UOverlay>(MenuWidgetSwitcher->GetChildAt(2)))
+	{
+		TempChildrenArray = SwitcherChild->GetAllChildren();
+		for (int i = 0; i < TempChildrenArray.Num() + 1; ++i)
+		{
+			if (UVerticalBox* SubChild = Cast<UVerticalBox>(TempChildrenArray.Pop()))
+			{
+				for (int j = 0; j < SubChild->GetChildrenCount(); j += 3)
+				{
+					if (UTextBlock* TempTextBlock = Cast<UTextBlock>(SubChild->GetChildAt(j)))
+					{
+						ChangeElementColorAndOpacity(TempTextBlock, true);
+					}
+				}
+			}
+		}
+	}
+
+	TempChildrenArray.Empty();
+
+}
+
 // прив€зываем нажатие кнопок к функци€м
 
 void UMainMenuWidget::NativeConstruct()
@@ -31,11 +125,6 @@ void UMainMenuWidget::NativeConstruct()
 	}
 
 	CurrentButtonType = PreviousButtonType = EButtonType::BU_Uncertain;
-
-	if (CanvasHolder)
-	{
-		CanvasHolder->SetContent(SNew(SMiniMap));
-	}
 
 }
 

@@ -9,8 +9,11 @@
 #include <Components/HorizontalBox.h>
 #include <Components/VerticalBox.h>
 #include <Components/Image.h>
+#include <Components/Overlay.h>
 #include <Animation/WidgetAnimation.h>
 #include <Components/NativeWidgetHost.h>
+#include <Components/TextBlock.h>
+#include "StyleSet.h"
 #include "MainMenuWidget.generated.h"
 
 UENUM()
@@ -19,6 +22,14 @@ enum class EButtonType : uint8 {
 	BU_Options	   UMETA(DisplayName = "Options"),       
 	BU_Authors     UMETA(DisplayName = "Authors"),
 	BU_Uncertain   UMETA(DisplayName = "Uncertain")
+};
+
+UENUM(BlueprintType)
+enum class EColorScheme : uint8 {
+	CO_BPDef		UMETA(DisplayName = "Blueprint Define"),
+	CO_Red			UMETA(DisplayName = "Red"),
+	CO_Green		UMETA(DisplayName = "Green"),
+	CO_Blue			UMETA(DisplayName = "Blue")
 };
 
 /**
@@ -33,7 +44,8 @@ private:
 	const float ANIMATION_PLAY_SPEED = 1.6f;
 
 public:		
- 	void NativeConstruct() override;
+	void NativePreConstruct() override;
+	void NativeConstruct() override;
 
 protected:
 	UFUNCTION()
@@ -52,7 +64,89 @@ protected:
 	bool FlipFlopSwitcher();
 	void PlayAnimationByButtonType(EButtonType ButtonType);
 
+	// шаблонная функция на изменение определенной цветовой компоненты у определенного элемента (виджета)
+	template<typename T>
+	void ChangeElementColorAndOpacity(T& Element, bool bOnlyTextOutlineChanges)
+	{
+		// если передаваемый в функцию виджет является UTextBlock, то мы будем обрабатывать изменения цвета текста и цвета его обводки
+		if (UTextBlock* TempTextBlock = Cast<UTextBlock>(Element))
+		{		
+			FSlateFontInfo FontSettings = TempTextBlock->Font;
+			
+			// если хотим изменить только цвет обводки без изменения основного цвета текста
+			if (bOnlyTextOutlineChanges)
+			{
+				switch (ColorScheme)
+				{
+				case EColorScheme::CO_BPDef:	break;
+
+				case EColorScheme::CO_Red:		FontSettings.OutlineSettings.OutlineColor = FStyleSet::Get().GetColor("DesaturatedRed");
+												TempTextBlock->SetFont(FontSettings);
+												break;
+					
+				case EColorScheme::CO_Green:	FontSettings.OutlineSettings.OutlineColor = FStyleSet::Get().GetColor("DesaturatedGreen");
+												TempTextBlock->SetFont(FontSettings);
+												break;
+					
+				case EColorScheme::CO_Blue:		FontSettings.OutlineSettings.OutlineColor = FStyleSet::Get().GetColor("DesaturatedBlue");
+												TempTextBlock->SetFont(FontSettings);
+												break;
+				}
+			}
+			// изменяем цвет текста и обводки
+			else 
+			{
+				switch (ColorScheme)
+				{
+				case EColorScheme::CO_BPDef:	break;
+
+				case EColorScheme::CO_Red:		TempTextBlock->SetColorAndOpacity(FStyleSet::Get().GetColor("RedScheme"));
+												FontSettings.OutlineSettings.OutlineColor = FStyleSet::Get().GetColor("DesaturatedRed");
+												TempTextBlock->SetFont(FontSettings);
+												break;
+
+				case EColorScheme::CO_Green:	TempTextBlock->SetColorAndOpacity(FStyleSet::Get().GetColor("GreenScheme"));
+												FontSettings.OutlineSettings.OutlineColor = FStyleSet::Get().GetColor("DesaturatedGreen");
+												TempTextBlock->SetFont(FontSettings);
+												break;
+
+				case EColorScheme::CO_Blue:		TempTextBlock->SetColorAndOpacity(FStyleSet::Get().GetColor("BlueScheme"));
+												FontSettings.OutlineSettings.OutlineColor = FStyleSet::Get().GetColor("DesaturatedBlue");
+												TempTextBlock->SetFont(FontSettings);
+												break;
+				}
+			}
+
+			Element = dynamic_cast<T>(TempTextBlock);
+
+		}
+
+		// если передаваемый в функцию виджет является UImage, то мы будем обрабатывать изменение цвета и прозрачности картинки
+		if (UImage* TempImage = Cast<UImage>(Element))
+		{
+			switch (ColorScheme)
+			{
+			case EColorScheme::CO_BPDef:	break;
+
+			case EColorScheme::CO_Red:		TempImage->SetColorAndOpacity(FStyleSet::Get().GetColor("OpacityDarkRed"));
+											break;
+
+			case EColorScheme::CO_Green:	TempImage->SetColorAndOpacity(FStyleSet::Get().GetColor("OpacityDarkGreen"));
+											break;
+
+			case EColorScheme::CO_Blue:		TempImage->SetColorAndOpacity(FStyleSet::Get().GetColor("OpacityDarkBlue"));
+											break;
+			}
+
+			Element = dynamic_cast<T>(TempImage);
+
+		}
+
+	}
+
 protected:
+	UPROPERTY(EditAnywhere, Category = "Appearance")
+		EColorScheme ColorScheme = EColorScheme::CO_Red;
 	UPROPERTY(meta = (BindWidget))
 		UWidgetSwitcher* MenuWidgetSwitcher;
 	UPROPERTY(meta = (BindWidget))
@@ -75,8 +169,6 @@ protected:
 		UWidgetAnimation* SwitcherAnimation;
 	UPROPERTY(Transient, meta = (BindWidgetAnim))
 		UWidgetAnimation* AuthorsTextTranslation;
-	UPROPERTY(meta = (BindWidgetOptional))
-		UNativeWidgetHost* CanvasHolder;
 
 protected:
 	EButtonType CurrentButtonType;

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
+#include "RadioButtonsWidgetStyle.h"
 
 UENUM(BlueprintType)
 enum class ERadioButtonChoice : uint8
@@ -26,6 +27,8 @@ public:
 
 		SLATE_EVENT(FOnRadioButtonChanged, OnRadioButtonChanged)
 
+		SLATE_STYLE_ARGUMENT(FRadioButtonsStyle, Style)
+
 	SLATE_END_ARGS()
 
 	/** Constructs this widget with InArgs */
@@ -35,9 +38,12 @@ protected:
 	TSharedRef<SWidget> CreateRadioButton(const FString& RadioText, ERadioButtonChoice RadioButtonChoice);
 	ECheckBoxState IsRadioButtonChecked (ERadioButtonChoice RadioButtonID);
 	void RadioButtonStateChanged(ECheckBoxState NewRadioState, ERadioButtonChoice RadioButtonID);
+	void SetRadioButtonStyle(const FRadioButtonsStyle* InStyle);
 	
 protected:
 	ERadioButtonChoice CurrentChoice;
 	FOnRadioButtonChanged OnRadioButtonChanged;
+	const FCheckBoxStyle* CheckBoxStyle;
+	const FTextBlockStyle* TextStyle;
 
 };
