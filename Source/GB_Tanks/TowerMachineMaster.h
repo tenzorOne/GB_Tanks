@@ -35,6 +35,8 @@ public:
 	UFUNCTION()
 		void StartFire();
 	UFUNCTION()
+		void StartFire_WithCurrentTarget(AActor* CurrentTarget);
+	UFUNCTION()
 		void StopFire();
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Take Damage"))
 		void EventTakeDamage();

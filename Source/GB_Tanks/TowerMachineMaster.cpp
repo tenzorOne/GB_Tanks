@@ -116,6 +116,14 @@ void ATowerMachineMaster::StartFire()
 
 }
 
+void ATowerMachineMaster::StartFire_WithCurrentTarget(AActor* CurrentTarget)
+{
+	Cannon->bAutomaticFire = true;
+	Cannon->SetCurrentTarget(CurrentTarget);
+	Cannon->StartFire();
+
+}
+
 void ATowerMachineMaster::StopFire()
 {
 	Cannon->bAutomaticFire = false;

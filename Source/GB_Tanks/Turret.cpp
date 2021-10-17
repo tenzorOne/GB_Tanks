@@ -5,6 +5,7 @@
 #include "TankPlayerController.h"
 #include "TimerManager.h"
 #include "DrawDebugHelpers.h"
+#include "TankPawn.h"
 
 // Sets default values
 ATurret::ATurret()
@@ -13,8 +14,14 @@ ATurret::ATurret()
 
 	HitCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Hit Collider"));
 	HitCollider->SetupAttachment(TurretMesh);
+	
+	TargetsCheckVolume = CreateDefaultSubobject<USphereComponent>(TEXT("Target's Check Volume"));
+	TargetsCheckVolume->SetupAttachment(TurretMesh);
+	TargetsCheckVolume->SetSphereRadius(TargetingRange * 2.f);
+	TargetsCheckVolume->OnComponentBeginOverlap.AddDynamic(this, &ATurret::BeginComponentOverlap);
 
 }
+
 
 void ATurret::BeginPlay()
 {
@@ -24,6 +31,26 @@ void ATurret::BeginPlay()
 
 	FTimerHandle TargetingTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TargetingTimerHandle, this, &ATurret::Targeting, TargetingRate, true, TargetingRate);
+
+}
+
+void ATurret::BeginComponentOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (bPlayersAlly)
+	{
+		if (OtherActor->ActorHasTag("Enemy") && OtherActor != PlayerPawn)
+		{
+			CurrentTarget = OtherActor;
+		}
+		else
+		{
+			CurrentTarget = nullptr;
+		}
+	}
+	else
+	{
+		CurrentTarget = PlayerPawn;
+	}
 
 }
 
@@ -38,14 +65,22 @@ void ATurret::Destroyed()
 
 void ATurret::Targeting()
 {
-	if (IsPlayerInRange())
+	if (TargetInRange())
 	{
-		RotateToPlayer();
+		RotateToTarget();
 	}
 	
-	if (CanFire() && IsPlayerInRange())
+	if (CanFire() && TargetInRange())
 	{
-		StartFire();
+		if (CurrentTarget)
+		{
+			StartFire_WithCurrentTarget(CurrentTarget);
+		}
+		else
+		{
+			StartFire();
+		}
+
 	}
 	else
 	{
@@ -54,21 +89,37 @@ void ATurret::Targeting()
 	
 }
 
-void ATurret::RotateToPlayer()
+void ATurret::RotateToTarget()
 {
-	RotateTurretTo(PlayerPawn->GetActorLocation());
+	if (CurrentTarget)
+	{
+		RotateTurretTo(CurrentTarget->GetActorLocation());
+	}
 
 }
 
-bool ATurret::IsPlayerInRange()
+bool ATurret::TargetInRange()
 {
-	return FVector::Distance(PlayerPawn->GetActorLocation(), GetActorLocation()) <= TargetingRange;
+	if (CurrentTarget)
+	{
+		return FVector::Distance(CurrentTarget->GetActorLocation(), GetActorLocation()) <= TargetingRange;
+	}
+	
+	return false;
 
 }
 
-bool ATurret::DetectPlayerVisibility()
+bool ATurret::DetectTargetVisibility()
 {
-	FVector PlayerPosition = PlayerPawn->GetActorLocation();
+	FVector TargetPosition;
+	if (CurrentTarget)
+	{
+		TargetPosition = CurrentTarget->GetActorLocation();
+	}
+	else
+	{
+		TargetPosition = FVector(0.f);
+	}
 	FVector ViewPosition = GetViewPosition();
 
 	FHitResult HitResult;
@@ -78,13 +129,13 @@ bool ATurret::DetectPlayerVisibility()
 	TraceParams.AddIgnoredActor(Cannon);
 	TraceParams.bReturnPhysicalMaterial = false;
 
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, ViewPosition, PlayerPosition, ECollisionChannel::ECC_Visibility, TraceParams))
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, ViewPosition, TargetPosition, ECollisionChannel::ECC_Visibility, TraceParams))
 	{
 
 		if (HitResult.Actor.Get())
 		{
 			//DrawDebugLine(GetWorld(), ViewPosition, HitResult.Location, FColor::Cyan, false, 0.5f, 0, 10);
-			return HitResult.Actor.Get() == PlayerPawn;
+			return HitResult.Actor.Get() == CurrentTarget;
 		}
 	}
 	//DrawDebugLine(GetWorld(), ViewPosition, PlayerPosition, FColor::Cyan, false, 0.5f, 0, 10);
@@ -94,15 +145,15 @@ bool ATurret::DetectPlayerVisibility()
 
 bool ATurret::CanFire()
 {
-	if (!DetectPlayerVisibility())
+	if (!DetectTargetVisibility())
 	{
 		return false;
 	}
 	
 	FVector TargetDirection = TurretMesh->GetForwardVector();
-	FVector DirectionToPlayer = PlayerPawn->GetActorLocation() - TurretMesh->GetComponentLocation();
-	DirectionToPlayer.Normalize();
-	float AimAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(TargetDirection, DirectionToPlayer)));
+	FVector DirectionToTarget = CurrentTarget->GetActorLocation() - TurretMesh->GetComponentLocation();
+	DirectionToTarget.Normalize();
+	float AimAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(TargetDirection, DirectionToTarget)));
 	
 	return AimAngle <= Accurency;
 

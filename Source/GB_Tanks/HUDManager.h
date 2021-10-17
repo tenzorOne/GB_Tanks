@@ -13,6 +13,7 @@ enum class EWidgetType : uint8
 	MainMenu,
 	GameOverMenu,
 	PlayerHealthBar,
+	TurretList
 };
 
 /**

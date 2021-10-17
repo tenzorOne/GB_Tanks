@@ -9,6 +9,7 @@
 ATankPlayerController::ATankPlayerController()
 {
 	bShowMouseCursor = true;
+	bEnableClickEvents = false;
 
 }
 
@@ -61,6 +62,11 @@ void ATankPlayerController::StopFire()
 	if (TankPawn)
 	{
 		TankPawn->StopFire();
+
+		if (OnMouseButtonUp.IsBound())
+		{
+			OnMouseButtonUp.Broadcast();
+		}
 	}
 
 }

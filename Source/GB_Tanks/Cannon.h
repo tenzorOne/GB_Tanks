@@ -58,6 +58,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UMatineeCameraShake> ShootShake;
 
+	AActor* CurrentTarget;
 	FTimerHandle ReloadTimerHandle;
 	FDamageData DamageData;
 	bool bReadyToFire = true;
@@ -70,6 +71,7 @@ public:
 	void StopFire();
 	bool IsReadyToFire();
 	void AddAmmo(int32 AmmoToAdd);
+	void SetCurrentTarget(AActor* InTarget) { CurrentTarget = InTarget; };
 
 protected:
 	void Reload();
