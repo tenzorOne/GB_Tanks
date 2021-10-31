@@ -104,7 +104,6 @@ void UDraggableList::OnMouseButtonUp()
 void UDraggableList::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
 	OutOperation = UWidgetBlueprintLibrary::CreateDragDropOperation(OutOperation->StaticClass());
-
 	if (OutOperation)
 	{
 		UDragDropOperation* DragAndDrop = Cast<UDragDropOperation>(OutOperation);
