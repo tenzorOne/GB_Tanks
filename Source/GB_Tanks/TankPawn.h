@@ -15,6 +15,8 @@ class ATankPlayerController;
 class ATankAIController;
 class ACannon;
 class ATargetPoint;
+class UWidgetComponent;
+class UMaterialParameterCollection;
 
 UCLASS()
 class GB_TANKS_API ATankPawn : public ATowerMachineMaster
@@ -47,7 +49,13 @@ public:
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
+	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+		UMaterial* DefaultMaterial;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+		UMaterialParameterCollection* MaterialParameters;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		USpringArmComponent* SpringArm;
@@ -55,6 +63,8 @@ protected:
 		UCameraComponent* Camera;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon", meta = (DisplayPriority = "2"))
 		TSubclassOf<ACannon> SecondCannonClass = CannonClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		UWidgetComponent* WorldWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement|Speed")
 		float MoveSpeed = 100.f;
@@ -100,5 +110,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void EquipItem(int32 SlotIndex, FName ItemID) override;
+	void UnequipItem(int32 SlotIndex, FName ItemID) override;
 
 };

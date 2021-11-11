@@ -36,6 +36,7 @@ void ATowerMachineMaster::BeginPlay()
 {
 	Super::BeginPlay();
 
+	TakeDamageDelegate.BindUFunction(this, FName("EventTakeDamage"));
 	SetupCannon(CannonClass);
 
 }
@@ -115,6 +116,14 @@ void ATowerMachineMaster::StartFire()
 
 }
 
+void ATowerMachineMaster::StartFire_WithCurrentTarget(AActor* CurrentTarget)
+{
+	Cannon->bAutomaticFire = true;
+	Cannon->SetCurrentTarget(CurrentTarget);
+	Cannon->StartFire();
+
+}
+
 void ATowerMachineMaster::StopFire()
 {
 	Cannon->bAutomaticFire = false;
@@ -127,6 +136,7 @@ void ATowerMachineMaster::TakeDamage(FDamageData& DamageData)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnHitParticleEffect, DamageData.HitLocation, FRotator(0.f), FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
 	}
+	TakeDamageDelegate.ExecuteIfBound();
 	HealthComponent->TakeDamage(DamageData);
 
 }
