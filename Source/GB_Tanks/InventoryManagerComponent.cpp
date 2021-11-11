@@ -20,10 +20,11 @@ void UInventoryManagerComponent::Init(UInventoryComponent* InInventoryComponent)
 		ensure(InventoryWidgetClass);
 		InventoryWidget = CreateWidget<UInventoryWidget>(GetWorld(), InventoryWidgetClass);
 		InventoryWidget->OnItemDrop.AddUObject(this, &UInventoryManagerComponent::OnItemDropped);
+		InventoryWidget->RepresentedInventory = InventoryComponent;
 		InventoryWidget->AddToViewport();
 
 		InventoryWidget->Init(FMath::Max(InventoryComponent->GetItemsNum(), MinInventorySize));
-		
+
 		for (auto& Item : InventoryComponent->GetItems())
 		{
 			FInventoryItemInfo* ItemData = GetItemData(Item.Value.ID);
@@ -34,6 +35,16 @@ void UInventoryManagerComponent::Init(UInventoryComponent* InInventoryComponent)
 			}
 		}
 	}
+
+}
+
+void UInventoryManagerComponent::InitEquipment(UInventoryComponent* InInventoryComponent)
+{
+	ensure(EquipInventoryWidgetClass);
+	EquipInventoryWidget = CreateWidget<UInventoryWidget>(GetWorld(), EquipInventoryWidgetClass);
+	EquipInventoryWidget->OnItemDrop.AddUObject(this, &UInventoryManagerComponent::OnItemDropped);
+	EquipInventoryWidget->RepresentedInventory = InInventoryComponent;
+	EquipInventoryWidget->AddToViewport();
 
 }
 
@@ -67,7 +78,15 @@ EItemRarity UInventoryManagerComponent::GetItemRarity(FName ItemID)
 
 void UInventoryManagerComponent::OnItemDropped(UInventoryCellWidget* DraggedFrom, UInventoryCellWidget* DroppedTo)
 {
-	if (DraggedFrom == nullptr || DroppedTo == nullptr || InventoryComponent == nullptr)
+	if (DraggedFrom == nullptr || DroppedTo == nullptr)
+	{
+		return;
+	}
+
+	UInventoryComponent* FromInventory = DraggedFrom->ParentInventoryWidget->RepresentedInventory;
+	UInventoryComponent* ToInventory = DroppedTo->ParentInventoryWidget->RepresentedInventory;
+
+	if (FromInventory == nullptr || ToInventory == nullptr)
 	{
 		return;
 	}
@@ -77,6 +96,11 @@ void UInventoryManagerComponent::OnItemDropped(UInventoryCellWidget* DraggedFrom
 
 	FInventorySlotInfo FromSlotItem = DraggedFrom->GetItem();
 	FInventorySlotInfo ToSlotItem = DroppedTo->GetItem();
+
+	if (FromSlotItem.Count <= 0)
+	{
+		return;
+	}
 	
 	FInventoryItemInfo* FromInfoItem = GetItemData(FromSlotItem.ID);
 	FInventoryItemInfo* ToInfoItem = GetItemData(ToSlotItem.ID);
@@ -85,6 +109,42 @@ void UInventoryManagerComponent::OnItemDropped(UInventoryCellWidget* DraggedFrom
 	{
 		return;
 	}
+
+	int32 MaxCount = ToInventory->GetMaxItemAmount(DroppedTo->IndexInInventory, *FromInfoItem);
+	if (MaxCount == 0)
+	{
+		return;
+	}
+	else if (MaxCount < 0)
+	{
+		if (ToInventory != FromInventory && ToInfoItem != nullptr)
+		{
+			ToSlotItem.bUnequipProccess = true;
+			ToSlotItem.bUnequipAndStack = true;
+
+			FromSlotItem.Count += ToSlotItem.Count;
+			FromSlotItem.ID = ToSlotItem.ID;
+			FromInfoItem = ToInfoItem;
+
+			ToSlotItem.Count = 0;
+		}
+		else
+		{
+			MaxCount = 1;
+		}
+	}
+	else if (MaxCount > 0)
+	{
+		int32 ItemsToAdd = FMath::Min(MaxCount, FromSlotItem.Count);
+		ToSlotItem.Count = FromSlotItem.Count - ItemsToAdd;
+		ToSlotItem.ID = FromSlotItem.ID;
+		ToInfoItem = FromInfoItem;
+
+		FromSlotItem.Count = ItemsToAdd;
+	}
+
+	FromInventory->SetItem(DraggedFrom->IndexInInventory, ToSlotItem);
+	ToInventory->SetItem(DroppedTo->IndexInInventory, FromSlotItem);
 
 	DraggedFrom->Clear();
 	if (ToInfoItem)

@@ -53,7 +53,10 @@ void UInventoryCellWidget::InitializeVisualProperties(const FInventoryItemInfo& 
 			if (bHasItem)
 			{
 				CellMaterialInstance->SetScalarParameterValue("EmptySlot", 0.f);
-				CountText->SetVisibility(ESlateVisibility::Visible);
+				if (bCountTextVisibleHardCode)
+				{
+					CountText->SetVisibility(ESlateVisibility::Visible);
+				}
 			}
 			else
 			{
@@ -105,6 +108,23 @@ void UInventoryCellWidget::InitializeVisualProperties(const FInventoryItemInfo& 
 }
 
 
+void UInventoryCellWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+
+	if (!bCountTextVisibleHardCode)
+	{
+		CountText->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+}
+
+void UInventoryCellWidget::CountTextVisibilityChanged_Hardcode()
+{
+	CountText->SetVisibility(ESlateVisibility::Collapsed);
+
+}
+
 bool UInventoryCellWidget::HasItem()
 {
 	return bHasItem;
@@ -116,6 +136,12 @@ bool UInventoryCellWidget::AddItem(const FInventorySlotInfo& Item, const FInvent
 	if (bHasItem)
 	{
 		return false;
+	}
+
+	if (Item.Count <= 0)
+	{
+		Clear();
+		return true;
 	}
 
 	if (CellImage)
@@ -217,6 +243,7 @@ void UInventoryCellWidget::NativeOnDragDetected(const FGeometry& InGeometry, con
 		UInventoryDragDropOperation* InventoryDragDropOperation = Cast<UInventoryDragDropOperation>(OutOperation);
 		InventoryDragDropOperation->Pivot = EDragPivot::CenterCenter;
 		InventoryDragDropOperation->SourceCell = this;
+		InventoryDragDropOperation->SourceCell->bHasItem ? true : false;
 		if (InventoryDragDropOperation->SourceCell)
 		{
 			InventoryDragDropOperation->SourceCell->CellImage->SetBrushFromMaterial(DraggableCellMaterial);
@@ -244,10 +271,27 @@ void UInventoryCellWidget::NativeOnDragDetected(const FGeometry& InGeometry, con
 
 }
 
+void UInventoryCellWidget::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	UInventoryDragDropOperation* InventoryDragDropOperation = Cast<UInventoryDragDropOperation>(InOperation);
+
+	if (InventoryDragDropOperation->SourceCell->bHasItem)
+	{
+		CellMaterialInstance->SetTextureParameterValue(FName("ItemIcon"), IconTexture);
+		
+		InventoryDragDropOperation->SourceCell->CellImage->SetBrushFromMaterial(CellMaterialInstance);
+		InventoryDragDropOperation->SourceCell->CountText->SetVisibility(ESlateVisibility::Visible);
+		InventoryDragDropOperation->SourceCell->CountText->SetText(this->CountText->GetText());
+		this->bDraggableNow = false;
+		InventoryDragDropOperation->SourceCell->bHasItem = true;
+	}
+
+}
+
 bool UInventoryCellWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {	
 	UInventoryDragDropOperation* InventoryDragDropOperation = Cast<UInventoryDragDropOperation>(InOperation);
-	
+
 	if (CellMaterialInstance)
 	{
 		CellMaterialInstance->SetTextureParameterValue(FName("ItemIcon"), EmptyCellTexture);

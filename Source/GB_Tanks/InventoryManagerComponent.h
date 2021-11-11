@@ -22,6 +22,8 @@ public:
 
  	UFUNCTION(BlueprintCallable)
 	void Init(UInventoryComponent* InInventoryComponent);
+	UFUNCTION(BlueprintCallable)
+	void InitEquipment(UInventoryComponent* InInventoryComponent);
 
 	FInventoryItemInfo* GetItemData(FName ItemID);
 	UTexture2D* GetItemIconTexture(UDataTable* DataTable, FName IconID);
@@ -33,6 +35,10 @@ protected:
 protected:
 	UPROPERTY()
 	UInventoryComponent* InventoryComponent;
+	UPROPERTY()
+	UInventoryWidget* EquipInventoryWidget;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UInventoryWidget> EquipInventoryWidgetClass;
 	UPROPERTY(EditAnywhere)
 	UDataTable* InventoryItemsData;
 	UPROPERTY(BlueprintReadOnly)

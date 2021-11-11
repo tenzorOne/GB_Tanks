@@ -28,6 +28,18 @@ enum class EItemRarity : uint8
 
 };
 
+UENUM(BlueprintType)
+enum class EEquipSlot : uint8
+{
+	EQ_None = 99			UMETA(DisplayName = "None"),
+	EQ_CannonSlot = 0		UMETA(DisplayName = "Cannon Slot"),
+	EQ_TrackSlot = 1		UMETA(DisplayName = "Track Slot"),
+	EQ_ArmorSlot = 2		UMETA(DisplayName = "Armor Slot"),
+	EQ_TowerSlot = 3		UMETA(DisplayName = "Tower Slot"),
+	EQ_EngineSlot = 4		UMETA(DisplayName = "Engine Slot")
+
+};
+
 USTRUCT(BlueprintType)
 struct FInventoryItemInfo : public FTableRowBase
 {
@@ -51,6 +63,8 @@ public:
 	EItemType Type;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Typing")
 	EItemRarity Rarity;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Typing")
+	EEquipSlot EquipmentSlot;
 
 	UPROPERTY(EditAnywhere, Category = "Visual")
 	TSoftObjectPtr<UTexture2D> Icon;
@@ -80,6 +94,10 @@ public:
 	FName ID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "General")
 	int32 Count;
+	UPROPERTY(BlueprintReadOnly, Category = "General")
+	bool bUnequipProccess = false;
+	UPROPERTY(BlueprintReadOnly, Category = "General")
+	bool bUnequipAndStack = false;
 
 private:
 	void SetItemIcon(UDataTable* InDataTable, FName InItemID);

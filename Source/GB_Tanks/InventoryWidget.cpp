@@ -3,12 +3,24 @@
 
 #include "InventoryWidget.h"
 #include "InventoryDragDropOperation.h"
+#include "InventoryComponent.h"
 #include <Components/OverlaySlot.h>
 
 
 void UInventoryWidget::NativeConstruct()
 {
+	Super::NativeConstruct();
 
+	UInventoryCellWidget* CellWidget;
+
+	for (int32 i = 0; i < CellWidgets.Num(); i++)
+	{
+		CellWidget = CellWidgets[i];
+		InitCellWidget(CellWidget);
+		CellWidget->IndexInInventory = i;
+		CellWidget->SetOwner(this);
+		CellWidget->CountTextVisibilityChanged_Hardcode();
+	}
 
 }
 
@@ -74,12 +86,22 @@ UInventoryCellWidget* UInventoryWidget::CreateCellWidget()
 		UInventoryCellWidget* CellWidget = CreateWidget<UInventoryCellWidget>(this, CellWidgetClass);
 		CellWidgets.Add(CellWidget);
 
-		CellWidget->OnItemDrop.AddUObject(this, &UInventoryWidget::OnItemDropped);
+		InitCellWidget(CellWidget);
 		
 		return CellWidget;
 	}
 	
 	return nullptr;
+
+}
+
+void UInventoryWidget::InitCellWidget(UInventoryCellWidget* Widget)
+{
+	if (Widget)
+	{
+		Widget->OnItemDrop.AddUObject(this, &UInventoryWidget::OnItemDropped);
+		Widget->ParentInventoryWidget = this;
+	}
 
 }
 

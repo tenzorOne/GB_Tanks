@@ -10,6 +10,7 @@
 #include "InventoryWidget.generated.h"
 
 class UInventoryDragDropOperation;
+class UInventoryComponent;
 
 
 /**
@@ -21,12 +22,16 @@ class GB_TANKS_API UInventoryWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	UPROPERTY()
+	UInventoryComponent* RepresentedInventory;
+	
 	FOnItemDrop OnItemDrop;
 
 public:
 	virtual void NativeConstruct() override;
 
 	void Init(int32 ItemsNum);
+	void InitCellWidget(UInventoryCellWidget* Widget);
 	bool AddItem(const FInventorySlotInfo& Item, const FInventoryItemInfo& ItemInfo, UTexture2D* InIconTexture, int32 SlotPosition = -1);
 	TSubclassOf<UInventoryCellWidget> GetCellWidgetClass() { return CellWidgetClass; }
 
@@ -41,7 +46,7 @@ protected:
 	int32 ItemsInRow = 5;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UInventoryCellWidget> CellWidgetClass;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	TArray<UInventoryCellWidget*> CellWidgets;
 
 };

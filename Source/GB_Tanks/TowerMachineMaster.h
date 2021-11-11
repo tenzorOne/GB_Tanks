@@ -8,6 +8,7 @@
 #include "Cannon.h"
 #include "DamageTaker.h"
 #include "IScorable.h"
+#include "InventoryItem.h"
 #include "TowerMachineMaster.generated.h"
 
 class UHealthComponent;
@@ -84,8 +85,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void EquipItem(int32 SlotIndex, FName ItemID) {};
+	virtual void UnequipItem(int32 SlotIndex, FName ItemID) {};
 	FVector GetViewPosition();
-	
 	virtual void Die();
 
 };
