@@ -14,9 +14,9 @@ UPhysicalTrajectoryComponent::UPhysicalTrajectoryComponent()
 	// ...
 }
 
-bool UPhysicalTrajectoryComponent::SuggestVeloctiy()
+bool UPhysicalTrajectoryComponent::SuggestVeloctiy(FVector LocationToCalculate)
 {
-	return UGameplayStatics::SuggestProjectileVelocity_CustomArc(GetWorld(), OutVelocity, GetOwner()->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+	return UGameplayStatics::SuggestProjectileVelocity_CustomArc(GetWorld(), OutVelocity, GetOwner()->GetActorLocation(), LocationToCalculate);
 
 }
 

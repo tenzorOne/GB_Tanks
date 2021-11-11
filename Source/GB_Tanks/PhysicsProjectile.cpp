@@ -19,7 +19,7 @@ APhysicsProjectile::APhysicsProjectile()
 
 void APhysicsProjectile::Start()
 {
-	if (PhysicsComponent->SuggestVeloctiy())
+	if (PhysicsComponent->SuggestVeloctiy(PhysicsComponent->GetCurrentTarget()->GetActorLocation()))
 	{
 		CurrentTrajectory = PhysicsComponent->GenerateTrajectory(SimStep, MaxSimTime, bShowTrajectory);
 		TrajectoryPointIndex = 0;

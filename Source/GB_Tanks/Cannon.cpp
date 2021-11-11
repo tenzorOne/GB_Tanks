@@ -15,6 +15,8 @@
 #include "GameFramework/ForceFeedbackEffect.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "AmmoBox.h"
+#include "PhysicsProjectile.h"
+#include "PhysicalTrajectoryComponent.h"
 
 
 ACannon::ACannon()
@@ -80,7 +82,21 @@ void ACannon::StartFire()
 			ShootEffect->ActivateSystem();
 			AudioEffect->Play();
 
-			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
+			AProjectile* Projectile;
+			if (CurrentTarget)
+			{
+				Projectile = GetWorld()->SpawnActorDeferred<AProjectile>(ProjectileClass, FTransform(ProjectileSpawnPoint->GetComponentRotation(), ProjectileSpawnPoint->GetComponentLocation(), FVector(1.f)));
+				if (APhysicsProjectile* PhysicsProjectile = Cast<APhysicsProjectile>(Projectile))
+				{
+					PhysicsProjectile->GetPhysicalComponent()->SetCurrentTarget(CurrentTarget);
+					Projectile = PhysicsProjectile;
+				}
+				Projectile->FinishSpawning(FTransform(ProjectileSpawnPoint->GetComponentRotation(), ProjectileSpawnPoint->GetComponentLocation(), FVector(1.f)));
+			}
+			else
+			{
+				Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
+			}
 			if (Projectile)
 			{
 				Projectile->OnDestroyTarget.AddUObject(this, &ACannon::TargetDestroyed);

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include <Components/SphereComponent.h>
 #include "TowerMachineMaster.h"
 #include "Turret.generated.h"
 
@@ -25,22 +26,33 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
- 	void Targeting();
- 	void RotateToPlayer();
-	bool IsPlayerInRange();
-	bool DetectPlayerVisibility();
+	void Targeting();
+ 	void RotateToTarget();
+	bool TargetInRange();
+	bool DetectTargetVisibility();
  	bool CanFire();
-	
+
+protected:
+	UFUNCTION()
+		void BeginComponentOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UBoxComponent* HitCollider;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		USphereComponent* TargetsCheckVolume;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Turret Logic")
+		bool bPlayersAlly = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting")
 		float TargetingRange = 1000.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting")
 		float TargetingRate = 0.05f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting")
 		float Accurency = 10.f;
-	UPROPERTY()
-		APawn* PlayerPawn;
+
+protected:
+	APawn* PlayerPawn;
+	AActor* CurrentTarget;
 	
 };

@@ -19,10 +19,14 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Parameters")
 		FVector OutVelocity;
-	
+
+protected:
+	AActor* CurrentTarget;
 
 public:		
-	bool SuggestVeloctiy();
+	bool SuggestVeloctiy(FVector LocationToCalculate);
 	TArray<FVector> GenerateTrajectory(float& SimStep, float& MaxSimTime, bool& ShowTrajectory);
+	void SetCurrentTarget(AActor* InTarget) { CurrentTarget = InTarget; };
+	AActor* GetCurrentTarget() { return CurrentTarget; };
 
 };

@@ -8,12 +8,15 @@
 #include "Cannon.h"
 #include "DamageTaker.h"
 #include "IScorable.h"
+#include "InventoryItem.h"
 #include "TowerMachineMaster.generated.h"
 
 class UHealthComponent;
 class UStaticMeshCompinent;
 class ACannon;
 class UParticleSystem;
+
+DECLARE_DELEGATE(FTakeDamage)
 
 UCLASS()
 class GB_TANKS_API ATowerMachineMaster : public APawn, public IDamageTaker, public IIScorable
@@ -33,7 +36,11 @@ public:
 	UFUNCTION()
 		void StartFire();
 	UFUNCTION()
+		void StartFire_WithCurrentTarget(AActor* CurrentTarget);
+	UFUNCTION()
 		void StopFire();
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Take Damage"))
+		void EventTakeDamage();
 	UFUNCTION()
 		virtual void TakeDamage(FDamageData& DamageData) override;
 	UFUNCTION()
@@ -69,6 +76,8 @@ protected:
 	UPROPERTY()
 		ACannon* Cannon;
 
+	FTakeDamage TakeDamageDelegate;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -76,8 +85,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void EquipItem(int32 SlotIndex, FName ItemID) {};
+	virtual void UnequipItem(int32 SlotIndex, FName ItemID) {};
 	FVector GetViewPosition();
-	
 	virtual void Die();
 
 };

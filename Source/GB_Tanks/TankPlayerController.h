@@ -25,6 +25,9 @@ protected:
 		FVector MouseDirection;
 
 public:
+	FSimpleMulticastDelegate OnMouseButtonUp;
+
+public:
 	ATankPlayerController();
 	virtual void SetupInputComponent() override;
 	virtual void Tick(float DeltaTime) override;
@@ -34,6 +37,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	void OnLeftMouseButtonUp();
 	void MoveForward(float AxisValue);
 	void RotateRight(float AxisValue);
 	void Fire();

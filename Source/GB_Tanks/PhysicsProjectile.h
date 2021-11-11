@@ -40,6 +40,7 @@ public:
 	APhysicsProjectile();
 
 	virtual void Start() override;
+	UPhysicalTrajectoryComponent* GetPhysicalComponent() { return PhysicsComponent; };
 
 protected:
 	virtual void Move() override;
