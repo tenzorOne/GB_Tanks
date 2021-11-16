@@ -50,12 +50,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	void BeginPlay() override;
-	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-		UMaterial* DefaultMaterial;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-		UMaterialParameterCollection* MaterialParameters;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		USpringArmComponent* SpringArm;
@@ -111,7 +105,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void EquipItem(int32 SlotIndex, FName ItemID) override;
-	void UnequipItem(int32 SlotIndex, FName ItemID) override;
+
 
 };

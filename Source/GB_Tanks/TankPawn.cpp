@@ -13,8 +13,6 @@
 #include <Engine/TargetPoint.h>
 #include <Components/WidgetComponent.h>
 #include <Materials/MaterialInstanceDynamic.h>
-#include <Kismet/KismetMaterialLibrary.h>
-#include "InventoryManagerComponent.h"
 #include <Materials/MaterialParameterCollection.h>
 #include <UObject/ReflectedTypeAccessors.h>
 #include <Kismet/KismetStringLibrary.h>
@@ -41,94 +39,6 @@ ATankPawn::ATankPawn()
 
 }
 
-
-void ATankPawn::EquipItem(int32 SlotIndex, FName ItemID)
-{
-	Super::EquipItem(SlotIndex, ItemID);
-
-	if (UMaterialInstanceDynamic* MainMaterialInstance = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, DefaultMaterial, FName()))
-	{
-		TArray<UActorComponent*> ActorComponents;
-		GetComponents(UInventoryManagerComponent::StaticClass(), ActorComponents);
-		if (ActorComponents.Num() != 0)
-		{
-			if (UInventoryManagerComponent* InventoryManagerComponent = Cast<UInventoryManagerComponent>(ActorComponents[0]))
-			{
-				EItemRarity ItemRarity = InventoryManagerComponent->GetItemRarity(ItemID);
-
-				if (ItemRarity != EItemRarity::IR_None && MaterialParameters)
-				{
-					FName SlotName = StaticEnum<EEquipSlot>()->GetNameByValue(SlotIndex == 99 ? 0 : SlotIndex);
-					FString StringSlotName = SlotName.ToString();
-					StringSlotName = StringSlotName.RightChop(12);
-
-					switch (ItemRarity)
-					{
-					case EItemRarity::IR_None:
-						break;
-					case EItemRarity::IR_Common:
-						MainMaterialInstance->SetVectorParameterValue(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Common"));
-						MainMaterialInstance->SetScalarParameterValue(FName(StringSlotName), 1.f);
-						DefaultMaterial->OverrideVectorParameterDefault(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Common"), true, ERHIFeatureLevel::SM5);
-						DefaultMaterial->OverrideScalarParameterDefault(FName(StringSlotName), 1.f, true, ERHIFeatureLevel::SM5);
-						break;
-					case EItemRarity::IR_Uncommon:
-						MainMaterialInstance->SetVectorParameterValue(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Uncommon"));
-						MainMaterialInstance->SetScalarParameterValue(FName(StringSlotName), 1.f);
-						DefaultMaterial->OverrideVectorParameterDefault(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Uncommon"), true, ERHIFeatureLevel::SM5);
-						DefaultMaterial->OverrideScalarParameterDefault(FName(StringSlotName), 1.f, true, ERHIFeatureLevel::SM5);
-						break;
-					case EItemRarity::IR_Rare:
-						MainMaterialInstance->SetVectorParameterValue(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Rare"));
-						MainMaterialInstance->SetScalarParameterValue(FName(StringSlotName), 1.f);
-						DefaultMaterial->OverrideVectorParameterDefault(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Rare"), true, ERHIFeatureLevel::SM5);
-						DefaultMaterial->OverrideScalarParameterDefault(FName(StringSlotName), 1.f, true, ERHIFeatureLevel::SM5);
-						break;
-					case EItemRarity::IR_Epic:
-						MainMaterialInstance->SetVectorParameterValue(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Epic"));
-						MainMaterialInstance->SetScalarParameterValue(FName(StringSlotName), 1.f);
-						DefaultMaterial->OverrideVectorParameterDefault(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Epic"), true, ERHIFeatureLevel::SM5);
-						DefaultMaterial->OverrideScalarParameterDefault(FName(StringSlotName), 1.f, true, ERHIFeatureLevel::SM5);
-						break;
-					case EItemRarity::IR_Legendary:
-						MainMaterialInstance->SetVectorParameterValue(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Legendary"));
-						MainMaterialInstance->SetScalarParameterValue(FName(StringSlotName), 1.f);
-						DefaultMaterial->OverrideVectorParameterDefault(FName(StringSlotName), UKismetMaterialLibrary::GetVectorParameterValue(this, MaterialParameters, "Legendary"), true, ERHIFeatureLevel::SM5);
-						DefaultMaterial->OverrideScalarParameterDefault(FName(StringSlotName), 1.f, true, ERHIFeatureLevel::SM5);
-						break;
-					}
-
-					BodyMesh->SetMaterial(0, MainMaterialInstance);
-					TurretMesh->SetMaterial(0, MainMaterialInstance);
-
-				}
-			}
-		}
-	}
-
-}
-
-void ATankPawn::UnequipItem(int32 SlotIndex, FName ItemID)
-{
-	Super::UnequipItem(SlotIndex, ItemID);
-
-	FName SlotName = StaticEnum<EEquipSlot>()->GetNameByValue(SlotIndex == 99 ? 0 : SlotIndex);
-	FString StringSlotName = SlotName.ToString();
-	StringSlotName = StringSlotName.RightChop(12);
-
-	if (UMaterialInstanceDynamic* MainMaterialInstance = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, DefaultMaterial, FName()))
-	{
-		MainMaterialInstance->SetVectorParameterValue(FName(StringSlotName), FLinearColor::Black);
-		MainMaterialInstance->SetScalarParameterValue(FName(StringSlotName), 0.f);
-		DefaultMaterial->OverrideVectorParameterDefault(FName(StringSlotName), FLinearColor::Black, false, ERHIFeatureLevel::SM5);
-		DefaultMaterial->OverrideScalarParameterDefault(FName(StringSlotName), 0.f, false, ERHIFeatureLevel::SM5);
-
-		BodyMesh->SetMaterial(0, MainMaterialInstance);
-		TurretMesh->SetMaterial(0, MainMaterialInstance);
-	}
-
-}
-
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
@@ -143,26 +53,6 @@ void ATankPawn::BeginPlay()
 	}
 	
 	TempStopFactor = GetDefaultStopFactor();
-
-}
-
-
-
-void ATankPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	if (DefaultMaterial)
-	{
-		DefaultMaterial->OverrideVectorParameterDefault(FName("EQ_CannonSlot"), FLinearColor::Black, false, ERHIFeatureLevel::SM5);
-		DefaultMaterial->OverrideScalarParameterDefault(FName("EQ_CannonSlot"), 0.f, false, ERHIFeatureLevel::SM5);
-		DefaultMaterial->OverrideVectorParameterDefault(FName("EQ_ArmorSlot"), FLinearColor::Black, false, ERHIFeatureLevel::SM5);
-		DefaultMaterial->OverrideScalarParameterDefault(FName("EQ_ArmorSlot"), 0.f, false, ERHIFeatureLevel::SM5);
-		DefaultMaterial->OverrideVectorParameterDefault(FName("EQ_TowerSlot"), FLinearColor::Black, false, ERHIFeatureLevel::SM5);
-		DefaultMaterial->OverrideScalarParameterDefault(FName("EQ_TowerSlot"), 0.f, false, ERHIFeatureLevel::SM5);
-		DefaultMaterial->OverrideVectorParameterDefault(FName("EQ_EngineSlot"), FLinearColor::Black, false, ERHIFeatureLevel::SM5);
-		DefaultMaterial->OverrideScalarParameterDefault(FName("EQ_EngineSlot"), 0.f, false, ERHIFeatureLevel::SM5);
-	}
-
-	Super::EndPlay(EndPlayReason);
 
 }
 
