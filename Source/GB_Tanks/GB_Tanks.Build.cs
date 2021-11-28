@@ -8,7 +8,15 @@ public class GB_Tanks : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "UMG" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core",
+																	"CoreUObject",
+																	"Engine",
+																	"InputCore",
+																	"HeadMountedDisplay",
+																	"UMG",
+																	"MediaAssets",
+																	"DesktopPlatform"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
